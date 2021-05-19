@@ -1,10 +1,12 @@
 <script lang="ts">
     import Taskbar from "./components/taskbar/Taskbar.svelte";
+    import Window from "./components/window/Base.svelte";
 </script>
 
 <main>
     <div />
     <Taskbar />
+    <Window />
 </main>
 
 <style>

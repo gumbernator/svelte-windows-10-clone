@@ -69,8 +69,8 @@
     }
 
     setInterval(() => {
-        updateTexts;
-    }, 1000);
+        updateTexts();
+    }, 100);
 
     updateDates();
     updateTexts();

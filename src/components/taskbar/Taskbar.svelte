@@ -28,6 +28,7 @@
         bottom: 0;
         height: var(--taskbar-height);
         background-color: hsla(360, 0%, 0%, 0.85);
+        user-select: none;
         z-index: 999;
     }
 </style>
