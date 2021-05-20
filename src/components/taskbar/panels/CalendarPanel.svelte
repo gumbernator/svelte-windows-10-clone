@@ -1,7 +1,7 @@
 <script lang="ts">
     import ChosenPanel from "../chosenPanel";
     import Language from "../../languages/chosen";
-    import type LanguageStruct from "../../languages/struct";
+    import { get } from "svelte/store";
 
     let className = "";
     let previouslyOpened = false;
@@ -14,7 +14,7 @@
         className = previouslyOpened ? "panel-close" : "";
     });
 
-    let language: LanguageStruct;
+    let language = get(Language);
 
     Language.subscribe((data) => {
         language = data;

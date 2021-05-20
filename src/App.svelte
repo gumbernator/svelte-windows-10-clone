@@ -4,7 +4,8 @@
 </script>
 
 <main>
-    <div />
+    <div class="background" />
+
     <Taskbar />
     <Window />
 </main>
@@ -13,11 +14,13 @@
     div {
         width: 100vw;
         height: 100vh;
-        background-color: #588dde;
-        background-image: url(../vectors/windows-logo.svg);
         background-repeat: no-repeat;
+    }
+    .background {
+        background-image: url(../vectors/Flat-Mountains.svg);
+        background-color: #588dde;
+        background-size: 100%;
         background-position: center;
-        background-size: 10%;
     }
 
     :global(:root) {

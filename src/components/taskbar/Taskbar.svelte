@@ -7,11 +7,21 @@
     import DateControl from "./DateControl.svelte";
     import NotificationCenter from "./NotificationCenter.svelte";
     import DesktopCorner from "./DesktopCorner.svelte";
+
+    import TaskbarItems from "./taskbarItems";
+    import { get } from "svelte/store";
+
+    let taskbarItems = get(TaskbarItems);
+    TaskbarItems.subscribe((data) => {
+        taskbarItems = data;
+    });
 </script>
 
 <div class="taskbar">
     <StartButton />
-    <TaskbarItem itemPosition={0} iconPath={"./vectors/icons8-folder.svg"} />
+    {#each taskbarItems as taskbarItem, i}
+        <TaskbarItem itemPosition={i} iconPath={taskbarItem.icon} />
+    {/each}
 
     <SystemTray />
     <LanguagePicker />

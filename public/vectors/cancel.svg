@@ -11,16 +11,14 @@
    id="Capa_1"
    x="0px"
    y="0px"
-   viewBox="0 0 480.00002 480.00002"
+   viewBox="0 0 512.001 512.001"
+   style="enable-background:new 0 0 512.001 512.001;"
    xml:space="preserve"
-   fill="#ffffff"
    sodipodi:docname="cancel.svg"
-   width="480"
-   height="480"
    inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)"><metadata
    id="metadata43"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
    id="defs41" /><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
@@ -34,9 +32,9 @@
    inkscape:window-height="1017"
    id="namedview39"
    showgrid="false"
-   inkscape:zoom="1.1739055"
-   inkscape:cx="151.70814"
-   inkscape:cy="282.94684"
+   inkscape:zoom="0.83007654"
+   inkscape:cx="115.74946"
+   inkscape:cy="261.67748"
    inkscape:window-x="-8"
    inkscape:window-y="-8"
    inkscape:window-maximized="1"
@@ -44,12 +42,15 @@
    inkscape:document-rotation="0" />
 <g
    id="g6"
-   transform="matrix(0.33615218,0,0,0.34296509,158.4453,148.22365)">
+   transform="matrix(0.3811771,0,0,0.3811771,163.84015,155.40783)"
+   style="fill:#ffffff;stroke-width:1.45864;stroke-miterlimit:4;stroke-dasharray:none">
 	<g
-   id="g4">
+   id="g4"
+   style="fill:#ffffff;stroke-width:1.45864;stroke-miterlimit:4;stroke-dasharray:none">
 		<path
    d="M 284.286,256.002 506.143,34.144 c 7.811,-7.811 7.811,-20.475 0,-28.285 -7.811,-7.81 -20.475,-7.811 -28.285,0 L 256,227.717 34.143,5.859 c -7.811,-7.811 -20.475,-7.811 -28.285,0 -7.81,7.811 -7.811,20.475 0,28.285 L 227.715,256.001 5.858,477.859 c -7.811,7.811 -7.811,20.475 0,28.285 3.905,3.905 9.024,5.857 14.143,5.857 5.119,0 10.237,-1.952 14.143,-5.857 L 256,284.287 477.857,506.144 c 3.905,3.905 9.024,5.857 14.143,5.857 5.119,0 10.237,-1.952 14.143,-5.857 7.811,-7.811 7.811,-20.475 0,-28.285 z"
-   id="path2" />
+   id="path2"
+   style="fill:#ffffff;stroke-width:1.45864;stroke-miterlimit:4;stroke-dasharray:none" />
 	</g>
 </g>
 <g
