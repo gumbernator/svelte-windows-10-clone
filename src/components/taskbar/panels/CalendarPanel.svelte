@@ -1,6 +1,6 @@
 <script lang="ts">
     import ChosenPanel from "../chosenPanel";
-    import Language from "../../languages/chosen";
+    import Language from "../../../languages/chosen";
     import { get } from "svelte/store";
 
     let className = "";

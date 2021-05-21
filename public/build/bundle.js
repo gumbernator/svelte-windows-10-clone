@@ -1292,22 +1292,22 @@ var app = (function () {
     			br1 = element("br");
     			t8 = text("Buuz (Mongolian)");
     			attr_dev(div0, "class", "language-picker-option-left svelte-134k3sl");
-    			add_location(div0, file$9, 59, 8, 1581);
-    			add_location(br0, file$9, 61, 35, 1718);
+    			add_location(div0, file$9, 59, 8, 1590);
+    			add_location(br0, file$9, 61, 35, 1727);
     			attr_dev(div1, "class", "language-picker-option-right svelte-134k3sl");
-    			add_location(div1, file$9, 60, 8, 1640);
+    			add_location(div1, file$9, 60, 8, 1649);
     			attr_dev(button0, "class", button0_class_value = "language-picker-option-EN " + /*engClass*/ ctx[1] + " svelte-134k3sl");
-    			add_location(button0, file$9, 58, 4, 1497);
+    			add_location(button0, file$9, 58, 4, 1506);
     			attr_dev(div2, "class", "language-picker-option-left svelte-134k3sl");
-    			add_location(div2, file$9, 65, 8, 1853);
-    			add_location(br1, file$9, 67, 21, 1976);
+    			add_location(div2, file$9, 65, 8, 1862);
+    			add_location(br1, file$9, 67, 21, 1985);
     			attr_dev(div3, "class", "language-picker-option-right svelte-134k3sl");
-    			add_location(div3, file$9, 66, 8, 1912);
+    			add_location(div3, file$9, 66, 8, 1921);
     			attr_dev(button1, "class", button1_class_value = "language-picker-option-MN " + /*monClass*/ ctx[2] + " svelte-134k3sl");
-    			add_location(button1, file$9, 64, 4, 1769);
+    			add_location(button1, file$9, 64, 4, 1778);
     			attr_dev(div4, "class", div4_class_value = "language-picker-panel " + /*className*/ ctx[0] + " svelte-134k3sl");
     			set_style(div4, "visibility", "hidden");
-    			add_location(div4, file$9, 57, 0, 1417);
+    			add_location(div4, file$9, 57, 0, 1426);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1512,9 +1512,9 @@ var app = (function () {
     			t1 = space();
     			create_component(languagepickerpanel.$$.fragment);
     			attr_dev(p, "class", "svelte-12zm8z3");
-    			add_location(p, file$8, 25, 4, 641);
+    			add_location(p, file$8, 25, 4, 644);
     			attr_dev(button, "class", "svelte-12zm8z3");
-    			add_location(button, file$8, 24, 0, 609);
+    			add_location(button, file$8, 24, 0, 612);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1657,7 +1657,7 @@ var app = (function () {
     			t = text(t_value);
     			set_style(button, "color", "grey");
     			attr_dev(button, "class", "svelte-6a8ex9");
-    			add_location(button, file$7, 100, 28, 3547);
+    			add_location(button, file$7, 100, 28, 3550);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -1694,7 +1694,7 @@ var app = (function () {
     			t = text(t_value);
     			set_style(button, "color", "white");
     			attr_dev(button, "class", "svelte-6a8ex9");
-    			add_location(button, file$7, 96, 28, 3359);
+    			add_location(button, file$7, 96, 28, 3362);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -1794,7 +1794,7 @@ var app = (function () {
 
     			t = space();
     			attr_dev(div, "class", "svelte-6a8ex9");
-    			add_location(div, file$7, 93, 16, 3197);
+    			add_location(div, file$7, 93, 16, 3200);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -1956,46 +1956,46 @@ var app = (function () {
     			}
 
     			attr_dev(div0, "class", "svelte-6a8ex9");
-    			add_location(div0, file$7, 69, 12, 2262);
+    			add_location(div0, file$7, 69, 12, 2265);
     			attr_dev(div1, "class", "upper-time svelte-6a8ex9");
-    			add_location(div1, file$7, 68, 8, 2225);
+    			add_location(div1, file$7, 68, 8, 2228);
     			attr_dev(div2, "class", "svelte-6a8ex9");
-    			add_location(div2, file$7, 72, 12, 2355);
+    			add_location(div2, file$7, 72, 12, 2358);
     			attr_dev(div3, "class", "upper-hour-type svelte-6a8ex9");
-    			add_location(div3, file$7, 71, 8, 2313);
+    			add_location(div3, file$7, 71, 8, 2316);
     			attr_dev(div4, "class", "svelte-6a8ex9");
-    			add_location(div4, file$7, 75, 12, 2446);
+    			add_location(div4, file$7, 75, 12, 2449);
     			attr_dev(div5, "class", "upper-date svelte-6a8ex9");
-    			add_location(div5, file$7, 74, 8, 2409);
+    			add_location(div5, file$7, 74, 8, 2412);
     			attr_dev(div6, "class", "upper svelte-6a8ex9");
-    			add_location(div6, file$7, 67, 4, 2197);
+    			add_location(div6, file$7, 67, 4, 2200);
     			attr_dev(div7, "class", "svelte-6a8ex9");
-    			add_location(div7, file$7, 80, 12, 2574);
+    			add_location(div7, file$7, 80, 12, 2577);
     			attr_dev(div8, "class", "lower-month-year svelte-6a8ex9");
-    			add_location(div8, file$7, 79, 8, 2531);
+    			add_location(div8, file$7, 79, 8, 2534);
     			attr_dev(div9, "class", "svelte-6a8ex9");
-    			add_location(div9, file$7, 83, 12, 2671);
+    			add_location(div9, file$7, 83, 12, 2674);
     			attr_dev(div10, "class", "svelte-6a8ex9");
-    			add_location(div10, file$7, 84, 12, 2731);
+    			add_location(div10, file$7, 84, 12, 2734);
     			attr_dev(div11, "class", "svelte-6a8ex9");
-    			add_location(div11, file$7, 85, 12, 2791);
+    			add_location(div11, file$7, 85, 12, 2794);
     			attr_dev(div12, "class", "svelte-6a8ex9");
-    			add_location(div12, file$7, 86, 12, 2852);
+    			add_location(div12, file$7, 86, 12, 2855);
     			attr_dev(div13, "class", "svelte-6a8ex9");
-    			add_location(div13, file$7, 87, 12, 2915);
+    			add_location(div13, file$7, 87, 12, 2918);
     			attr_dev(div14, "class", "svelte-6a8ex9");
-    			add_location(div14, file$7, 88, 12, 2977);
+    			add_location(div14, file$7, 88, 12, 2980);
     			attr_dev(div15, "class", "svelte-6a8ex9");
-    			add_location(div15, file$7, 89, 12, 3037);
+    			add_location(div15, file$7, 89, 12, 3040);
     			attr_dev(div16, "class", "lower-week-days svelte-6a8ex9");
-    			add_location(div16, file$7, 82, 8, 2629);
+    			add_location(div16, file$7, 82, 8, 2632);
     			attr_dev(div17, "class", "lower-days svelte-6a8ex9");
-    			add_location(div17, file$7, 91, 8, 3110);
+    			add_location(div17, file$7, 91, 8, 3113);
     			attr_dev(div18, "class", "lower svelte-6a8ex9");
-    			add_location(div18, file$7, 78, 4, 2503);
+    			add_location(div18, file$7, 78, 4, 2506);
     			attr_dev(div19, "class", div19_class_value = "calendar " + /*className*/ ctx[0] + " svelte-6a8ex9");
     			set_style(div19, "visibility", "hidden");
-    			add_location(div19, file$7, 66, 0, 2130);
+    			add_location(div19, file$7, 66, 0, 2133);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2481,34 +2481,34 @@ var app = (function () {
     			div8 = element("div");
     			t12 = text(t12_value);
     			attr_dev(div0, "class", "no-noti-message svelte-148e0m4");
-    			add_location(div0, file$5, 20, 4, 607);
+    			add_location(div0, file$5, 20, 4, 610);
     			attr_dev(div1, "class", "location-icon svelte-148e0m4");
-    			add_location(div1, file$5, 24, 8, 746);
+    			add_location(div1, file$5, 24, 8, 749);
     			attr_dev(div2, "class", "card-text svelte-148e0m4");
-    			add_location(div2, file$5, 25, 8, 784);
+    			add_location(div2, file$5, 25, 8, 787);
     			attr_dev(button0, "class", "location svelte-148e0m4");
-    			add_location(button0, file$5, 23, 4, 712);
+    			add_location(button0, file$5, 23, 4, 715);
     			attr_dev(div3, "class", "night-light-icon svelte-148e0m4");
-    			add_location(div3, file$5, 28, 8, 911);
+    			add_location(div3, file$5, 28, 8, 914);
     			attr_dev(div4, "class", "card-text svelte-148e0m4");
-    			add_location(div4, file$5, 29, 8, 952);
+    			add_location(div4, file$5, 29, 8, 955);
     			attr_dev(button1, "class", "night-light svelte-148e0m4");
-    			add_location(button1, file$5, 27, 4, 874);
+    			add_location(button1, file$5, 27, 4, 877);
     			attr_dev(div5, "class", "screen-snip-icon svelte-148e0m4");
-    			add_location(div5, file$5, 34, 8, 1103);
+    			add_location(div5, file$5, 34, 8, 1106);
     			attr_dev(div6, "class", "card-text svelte-148e0m4");
-    			add_location(div6, file$5, 35, 8, 1144);
+    			add_location(div6, file$5, 35, 8, 1147);
     			attr_dev(button2, "class", "screen-snip svelte-148e0m4");
-    			add_location(button2, file$5, 33, 4, 1066);
+    			add_location(button2, file$5, 33, 4, 1069);
     			attr_dev(div7, "class", "network-icon svelte-148e0m4");
-    			add_location(div7, file$5, 40, 8, 1291);
+    			add_location(div7, file$5, 40, 8, 1294);
     			attr_dev(div8, "class", "card-text svelte-148e0m4");
-    			add_location(div8, file$5, 41, 8, 1328);
+    			add_location(div8, file$5, 41, 8, 1331);
     			attr_dev(button3, "class", "network svelte-148e0m4");
-    			add_location(button3, file$5, 39, 4, 1258);
+    			add_location(button3, file$5, 39, 4, 1261);
     			attr_dev(div9, "class", div9_class_value = "notification-panel " + /*className*/ ctx[0] + " svelte-148e0m4");
     			set_style(div9, "visibility", "hidden");
-    			add_location(div9, file$5, 19, 0, 530);
+    			add_location(div9, file$5, 19, 0, 533);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");

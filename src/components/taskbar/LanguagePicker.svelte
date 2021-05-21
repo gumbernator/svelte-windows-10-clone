@@ -1,7 +1,7 @@
 <script lang="ts">
     import ChosenPanel from "./chosenPanel";
     import LanguagePickerPanel from "./panels/LanguagePickerPanel.svelte";
-    import ChosenLanguage from "../languages/chosen";
+    import ChosenLanguage from "../../languages/chosen";
 
     let languageAbbr = "";
 

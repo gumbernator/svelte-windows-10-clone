@@ -1,8 +1,8 @@
 <script lang="ts">
     import ChosenPanel from "../chosenPanel";
-    import Language from "../../languages/chosen";
-    import eng from "../../languages/eng";
-    import mon from "../../languages/mon";
+    import Language from "../../../languages/chosen";
+    import eng from "../../../languages/eng";
+    import mon from "../../../languages/mon";
 
     let className = "";
     let previouslyOpened = false;
