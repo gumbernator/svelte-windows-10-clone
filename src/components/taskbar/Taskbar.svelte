@@ -1,28 +1,14 @@
 <script lang="ts">
     import StartButton from "./StartButton.svelte";
-    import TaskbarItem from "./TaskbarItem.svelte";
-
     import SystemTray from "./SystemTray.svelte";
     import LanguagePicker from "./LanguagePicker.svelte";
     import DateControl from "./DateControl.svelte";
     import NotificationCenter from "./NotificationCenter.svelte";
     import DesktopCorner from "./DesktopCorner.svelte";
-
-    import TaskbarItems from "./taskbarItems";
-    import { get } from "svelte/store";
-
-    let taskbarItems = get(TaskbarItems);
-    TaskbarItems.subscribe((data) => {
-        taskbarItems = data;
-    });
 </script>
 
 <div class="taskbar">
     <StartButton />
-    {#each taskbarItems as taskbarItem, i}
-        <TaskbarItem itemPosition={i} iconPath={taskbarItem.icon} />
-    {/each}
-
     <SystemTray />
     <LanguagePicker />
     <DateControl />

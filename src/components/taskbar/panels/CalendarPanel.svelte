@@ -68,9 +68,7 @@
         lowerMonthYearText = `${month} ${year}`;
     }
 
-    setInterval(() => {
-        updateTexts();
-    }, 100);
+    setInterval(updateTexts, 100);
 
     updateDates();
     updateTexts();

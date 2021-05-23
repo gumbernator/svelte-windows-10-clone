@@ -46,11 +46,13 @@
         src="./vectors/icons8-windows-10-start.svg"
         alt=""
         style="visibility: {inactiveVisibility}"
+        draggable="false"
     />
     <img
         src="./vectors/icons8-windows-10-start-active.svg"
         alt=""
         style="visibility: {activeVisibility}"
+        draggable="false"
     />
 </button>
 <StartPanel />

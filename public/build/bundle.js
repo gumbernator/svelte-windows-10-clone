@@ -4,6 +4,7 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    const identity = x => x;
     function assign(tar, src) {
         // @ts-ignore
         for (const k in src)
@@ -82,6 +83,41 @@ var app = (function () {
         }
     }
 
+    const is_client = typeof window !== 'undefined';
+    let now = is_client
+        ? () => window.performance.now()
+        : () => Date.now();
+    let raf = is_client ? cb => requestAnimationFrame(cb) : noop;
+
+    const tasks = new Set();
+    function run_tasks(now) {
+        tasks.forEach(task => {
+            if (!task.c(now)) {
+                tasks.delete(task);
+                task.f();
+            }
+        });
+        if (tasks.size !== 0)
+            raf(run_tasks);
+    }
+    /**
+     * Creates a new task that runs on each raf frame
+     * until it returns a falsy value or is aborted
+     */
+    function loop(callback) {
+        let task;
+        if (tasks.size === 0)
+            raf(run_tasks);
+        return {
+            promise: new Promise(fulfill => {
+                tasks.add(task = { c: callback, f: fulfill });
+            }),
+            abort() {
+                tasks.delete(task);
+            }
+        };
+    }
+
     function append(target, node) {
         target.appendChild(node);
     }
@@ -131,9 +167,79 @@ var app = (function () {
         return e;
     }
 
+    const active_docs = new Set();
+    let active = 0;
+    // https://github.com/darkskyapp/string-hash/blob/master/index.js
+    function hash(str) {
+        let hash = 5381;
+        let i = str.length;
+        while (i--)
+            hash = ((hash << 5) - hash) ^ str.charCodeAt(i);
+        return hash >>> 0;
+    }
+    function create_rule(node, a, b, duration, delay, ease, fn, uid = 0) {
+        const step = 16.666 / duration;
+        let keyframes = '{\n';
+        for (let p = 0; p <= 1; p += step) {
+            const t = a + (b - a) * ease(p);
+            keyframes += p * 100 + `%{${fn(t, 1 - t)}}\n`;
+        }
+        const rule = keyframes + `100% {${fn(b, 1 - b)}}\n}`;
+        const name = `__svelte_${hash(rule)}_${uid}`;
+        const doc = node.ownerDocument;
+        active_docs.add(doc);
+        const stylesheet = doc.__svelte_stylesheet || (doc.__svelte_stylesheet = doc.head.appendChild(element('style')).sheet);
+        const current_rules = doc.__svelte_rules || (doc.__svelte_rules = {});
+        if (!current_rules[name]) {
+            current_rules[name] = true;
+            stylesheet.insertRule(`@keyframes ${name} ${rule}`, stylesheet.cssRules.length);
+        }
+        const animation = node.style.animation || '';
+        node.style.animation = `${animation ? `${animation}, ` : ''}${name} ${duration}ms linear ${delay}ms 1 both`;
+        active += 1;
+        return name;
+    }
+    function delete_rule(node, name) {
+        const previous = (node.style.animation || '').split(', ');
+        const next = previous.filter(name
+            ? anim => anim.indexOf(name) < 0 // remove specific animation
+            : anim => anim.indexOf('__svelte') === -1 // remove all Svelte animations
+        );
+        const deleted = previous.length - next.length;
+        if (deleted) {
+            node.style.animation = next.join(', ');
+            active -= deleted;
+            if (!active)
+                clear_rules();
+        }
+    }
+    function clear_rules() {
+        raf(() => {
+            if (active)
+                return;
+            active_docs.forEach(doc => {
+                const stylesheet = doc.__svelte_stylesheet;
+                let i = stylesheet.cssRules.length;
+                while (i--)
+                    stylesheet.deleteRule(i);
+                doc.__svelte_rules = {};
+            });
+            active_docs.clear();
+        });
+    }
+
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    // TODO figure out if we still want to support
+    // shorthand events, or if we want to implement
+    // a real bubbling mechanism
+    function bubble(component, event) {
+        const callbacks = component.$$.callbacks[event.type];
+        if (callbacks) {
+            callbacks.slice().forEach(fn => fn(event));
+        }
     }
 
     const dirty_components = [];
@@ -199,6 +305,20 @@ var app = (function () {
             $$.after_update.forEach(add_render_callback);
         }
     }
+
+    let promise;
+    function wait() {
+        if (!promise) {
+            promise = Promise.resolve();
+            promise.then(() => {
+                promise = null;
+            });
+        }
+        return promise;
+    }
+    function dispatch(node, direction, kind) {
+        node.dispatchEvent(custom_event(`${direction ? 'intro' : 'outro'}${kind}`));
+    }
     const outroing = new Set();
     let outros;
     function group_outros() {
@@ -235,6 +355,112 @@ var app = (function () {
             });
             block.o(local);
         }
+    }
+    const null_transition = { duration: 0 };
+    function create_bidirectional_transition(node, fn, params, intro) {
+        let config = fn(node, params);
+        let t = intro ? 0 : 1;
+        let running_program = null;
+        let pending_program = null;
+        let animation_name = null;
+        function clear_animation() {
+            if (animation_name)
+                delete_rule(node, animation_name);
+        }
+        function init(program, duration) {
+            const d = program.b - t;
+            duration *= Math.abs(d);
+            return {
+                a: t,
+                b: program.b,
+                d,
+                duration,
+                start: program.start,
+                end: program.start + duration,
+                group: program.group
+            };
+        }
+        function go(b) {
+            const { delay = 0, duration = 300, easing = identity, tick = noop, css } = config || null_transition;
+            const program = {
+                start: now() + delay,
+                b
+            };
+            if (!b) {
+                // @ts-ignore todo: improve typings
+                program.group = outros;
+                outros.r += 1;
+            }
+            if (running_program || pending_program) {
+                pending_program = program;
+            }
+            else {
+                // if this is an intro, and there's a delay, we need to do
+                // an initial tick and/or apply CSS animation immediately
+                if (css) {
+                    clear_animation();
+                    animation_name = create_rule(node, t, b, duration, delay, easing, css);
+                }
+                if (b)
+                    tick(0, 1);
+                running_program = init(program, duration);
+                add_render_callback(() => dispatch(node, b, 'start'));
+                loop(now => {
+                    if (pending_program && now > pending_program.start) {
+                        running_program = init(pending_program, duration);
+                        pending_program = null;
+                        dispatch(node, running_program.b, 'start');
+                        if (css) {
+                            clear_animation();
+                            animation_name = create_rule(node, t, running_program.b, running_program.duration, 0, easing, config.css);
+                        }
+                    }
+                    if (running_program) {
+                        if (now >= running_program.end) {
+                            tick(t = running_program.b, 1 - t);
+                            dispatch(node, running_program.b, 'end');
+                            if (!pending_program) {
+                                // we're done
+                                if (running_program.b) {
+                                    // intro — we can tidy up immediately
+                                    clear_animation();
+                                }
+                                else {
+                                    // outro — needs to be coordinated
+                                    if (!--running_program.group.r)
+                                        run_all(running_program.group.c);
+                                }
+                            }
+                            running_program = null;
+                        }
+                        else if (now >= running_program.start) {
+                            const p = now - running_program.start;
+                            t = running_program.a + running_program.d * easing(p / running_program.duration);
+                            tick(t, 1 - t);
+                        }
+                    }
+                    return !!(running_program || pending_program);
+                });
+            }
+        }
+        return {
+            run(b) {
+                if (is_function(config)) {
+                    wait().then(() => {
+                        // @ts-ignore
+                        config = config();
+                        go(b);
+                    });
+                }
+                else {
+                    go(b);
+                }
+            },
+            end() {
+                clear_animation();
+                running_program = pending_program = null;
+            }
+        };
     }
     function create_component(block) {
         block && block.c();
@@ -639,13 +865,15 @@ var app = (function () {
     			if (img0.src !== (img0_src_value = "./vectors/icons8-windows-10-start.svg")) attr_dev(img0, "src", img0_src_value);
     			attr_dev(img0, "alt", "");
     			set_style(img0, "visibility", /*inactiveVisibility*/ ctx[1]);
+    			attr_dev(img0, "draggable", "false");
     			attr_dev(img0, "class", "svelte-jv6rbt");
     			add_location(img0, file$d, 38, 4, 938);
     			if (img1.src !== (img1_src_value = "./vectors/icons8-windows-10-start-active.svg")) attr_dev(img1, "src", img1_src_value);
     			attr_dev(img1, "alt", "");
     			set_style(img1, "visibility", /*activeVisibility*/ ctx[0]);
+    			attr_dev(img1, "draggable", "false");
     			attr_dev(img1, "class", "svelte-jv6rbt");
-    			add_location(img1, file$d, 43, 4, 1070);
+    			add_location(img1, file$d, 44, 4, 1096);
     			attr_dev(button, "class", "svelte-jv6rbt");
     			add_location(button, file$d, 33, 0, 835);
     		},
@@ -792,194 +1020,10 @@ var app = (function () {
     	}
     }
 
-    /* src/components/taskbar/TaskbarItem.svelte generated by Svelte v3.38.2 */
-
-    const file$c = "src/components/taskbar/TaskbarItem.svelte";
+    /* src/components/taskbar/panels/SystemTrayPanel.svelte generated by Svelte v3.38.2 */
+    const file$c = "src/components/taskbar/panels/SystemTrayPanel.svelte";
 
     function create_fragment$c(ctx) {
-    	let button;
-    	let img;
-    	let img_src_value;
-    	let t;
-    	let div;
-    	let button_class_value;
-    	let mounted;
-    	let dispose;
-
-    	const block = {
-    		c: function create() {
-    			button = element("button");
-    			img = element("img");
-    			t = space();
-    			div = element("div");
-    			if (img.src !== (img_src_value = /*iconPath*/ ctx[1])) attr_dev(img, "src", img_src_value);
-    			attr_dev(img, "alt", "");
-    			attr_dev(img, "class", "taskbar-icon svelte-1dn5c5q");
-    			add_location(img, file$c, 35, 4, 810);
-    			attr_dev(div, "class", "svelte-1dn5c5q");
-    			add_location(div, file$c, 36, 4, 865);
-    			attr_dev(button, "class", button_class_value = "taskbar-item " + /*className*/ ctx[2] + " svelte-1dn5c5q");
-    			set_style(button, "--item-position", /*itemPosition*/ ctx[0]);
-    			add_location(button, file$c, 30, 0, 691);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, button, anchor);
-    			append_dev(button, img);
-    			append_dev(button, t);
-    			append_dev(button, div);
-
-    			if (!mounted) {
-    				dispose = listen_dev(button, "click", /*onClick*/ ctx[3], false, false, false);
-    				mounted = true;
-    			}
-    		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*iconPath*/ 2 && img.src !== (img_src_value = /*iconPath*/ ctx[1])) {
-    				attr_dev(img, "src", img_src_value);
-    			}
-
-    			if (dirty & /*className*/ 4 && button_class_value !== (button_class_value = "taskbar-item " + /*className*/ ctx[2] + " svelte-1dn5c5q")) {
-    				attr_dev(button, "class", button_class_value);
-    			}
-
-    			if (dirty & /*itemPosition*/ 1) {
-    				set_style(button, "--item-position", /*itemPosition*/ ctx[0]);
-    			}
-    		},
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(button);
-    			mounted = false;
-    			dispose();
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment$c.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function instance$c($$self, $$props, $$invalidate) {
-    	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("TaskbarItem", slots, []);
-    	let { itemPosition } = $$props;
-    	let { iconPath } = $$props;
-    	const states = { unopened: 1, opened: 2, focused: 3 };
-    	let state = states.unopened;
-    	let className = "taskbar-item-unopened";
-
-    	function onClick() {
-    		switch (state) {
-    			case states.unopened:
-    				{
-    					state = states.opened;
-    					$$invalidate(2, className = "taskbar-item-opened");
-    					break;
-    				}
-    			case states.opened:
-    				{
-    					state = states.focused;
-    					$$invalidate(2, className = "taskbar-item-focused");
-    					break;
-    				}
-    			case states.focused:
-    				{
-    					state = states.opened;
-    					$$invalidate(2, className = "taskbar-item-opened");
-    					break;
-    				}
-    		}
-    	}
-
-    	const writable_props = ["itemPosition", "iconPath"];
-
-    	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<TaskbarItem> was created with unknown prop '${key}'`);
-    	});
-
-    	$$self.$$set = $$props => {
-    		if ("itemPosition" in $$props) $$invalidate(0, itemPosition = $$props.itemPosition);
-    		if ("iconPath" in $$props) $$invalidate(1, iconPath = $$props.iconPath);
-    	};
-
-    	$$self.$capture_state = () => ({
-    		itemPosition,
-    		iconPath,
-    		states,
-    		state,
-    		className,
-    		onClick
-    	});
-
-    	$$self.$inject_state = $$props => {
-    		if ("itemPosition" in $$props) $$invalidate(0, itemPosition = $$props.itemPosition);
-    		if ("iconPath" in $$props) $$invalidate(1, iconPath = $$props.iconPath);
-    		if ("state" in $$props) state = $$props.state;
-    		if ("className" in $$props) $$invalidate(2, className = $$props.className);
-    	};
-
-    	if ($$props && "$$inject" in $$props) {
-    		$$self.$inject_state($$props.$$inject);
-    	}
-
-    	return [itemPosition, iconPath, className, onClick];
-    }
-
-    class TaskbarItem extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, instance$c, create_fragment$c, safe_not_equal, { itemPosition: 0, iconPath: 1 });
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "TaskbarItem",
-    			options,
-    			id: create_fragment$c.name
-    		});
-
-    		const { ctx } = this.$$;
-    		const props = options.props || {};
-
-    		if (/*itemPosition*/ ctx[0] === undefined && !("itemPosition" in props)) {
-    			console.warn("<TaskbarItem> was created without expected prop 'itemPosition'");
-    		}
-
-    		if (/*iconPath*/ ctx[1] === undefined && !("iconPath" in props)) {
-    			console.warn("<TaskbarItem> was created without expected prop 'iconPath'");
-    		}
-    	}
-
-    	get itemPosition() {
-    		throw new Error("<TaskbarItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set itemPosition(value) {
-    		throw new Error("<TaskbarItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get iconPath() {
-    		throw new Error("<TaskbarItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set iconPath(value) {
-    		throw new Error("<TaskbarItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-    }
-
-    /* src/components/taskbar/panels/SystemTrayPanel.svelte generated by Svelte v3.38.2 */
-    const file$b = "src/components/taskbar/panels/SystemTrayPanel.svelte";
-
-    function create_fragment$b(ctx) {
     	let div;
 
     	const block = {
@@ -987,7 +1031,7 @@ var app = (function () {
     			div = element("div");
     			attr_dev(div, "class", "system-tray-panel svelte-dips6g");
     			set_style(div, "--visibility", /*visibility*/ ctx[0]);
-    			add_location(div, file$b, 11, 0, 255);
+    			add_location(div, file$c, 11, 0, 255);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1009,7 +1053,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$b.name,
+    		id: create_fragment$c.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1018,7 +1062,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$b($$self, $$props, $$invalidate) {
+    function instance$c($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SystemTrayPanel", slots, []);
     	let visibility = "hidden";
@@ -1054,21 +1098,21 @@ var app = (function () {
     class SystemTrayPanel extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
+    		init(this, options, instance$c, create_fragment$c, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SystemTrayPanel",
     			options,
-    			id: create_fragment$b.name
+    			id: create_fragment$c.name
     		});
     	}
     }
 
     /* src/components/taskbar/SystemTray.svelte generated by Svelte v3.38.2 */
-    const file$a = "src/components/taskbar/SystemTray.svelte";
+    const file$b = "src/components/taskbar/SystemTray.svelte";
 
-    function create_fragment$a(ctx) {
+    function create_fragment$b(ctx) {
     	let button;
     	let t;
     	let systemtraypanel;
@@ -1083,7 +1127,7 @@ var app = (function () {
     			t = space();
     			create_component(systemtraypanel.$$.fragment);
     			attr_dev(button, "class", "svelte-1g0buk6");
-    			add_location(button, file$a, 10, 0, 288);
+    			add_location(button, file$b, 10, 0, 288);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1120,7 +1164,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$a.name,
+    		id: create_fragment$b.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1129,7 +1173,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$a($$self, $$props, $$invalidate) {
+    function instance$b($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SystemTray", slots, []);
 
@@ -1153,13 +1197,13 @@ var app = (function () {
     class SystemTray extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
+    		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SystemTray",
     			options,
-    			id: create_fragment$a.name
+    			id: create_fragment$b.name
     		});
     	}
     }
@@ -1246,9 +1290,9 @@ var app = (function () {
     };
 
     /* src/components/taskbar/panels/LanguagePickerPanel.svelte generated by Svelte v3.38.2 */
-    const file$9 = "src/components/taskbar/panels/LanguagePickerPanel.svelte";
+    const file$a = "src/components/taskbar/panels/LanguagePickerPanel.svelte";
 
-    function create_fragment$9(ctx) {
+    function create_fragment$a(ctx) {
     	let div4;
     	let button0;
     	let div0;
@@ -1292,22 +1336,22 @@ var app = (function () {
     			br1 = element("br");
     			t8 = text("Buuz (Mongolian)");
     			attr_dev(div0, "class", "language-picker-option-left svelte-134k3sl");
-    			add_location(div0, file$9, 59, 8, 1590);
-    			add_location(br0, file$9, 61, 35, 1727);
+    			add_location(div0, file$a, 59, 8, 1590);
+    			add_location(br0, file$a, 61, 35, 1727);
     			attr_dev(div1, "class", "language-picker-option-right svelte-134k3sl");
-    			add_location(div1, file$9, 60, 8, 1649);
+    			add_location(div1, file$a, 60, 8, 1649);
     			attr_dev(button0, "class", button0_class_value = "language-picker-option-EN " + /*engClass*/ ctx[1] + " svelte-134k3sl");
-    			add_location(button0, file$9, 58, 4, 1506);
+    			add_location(button0, file$a, 58, 4, 1506);
     			attr_dev(div2, "class", "language-picker-option-left svelte-134k3sl");
-    			add_location(div2, file$9, 65, 8, 1862);
-    			add_location(br1, file$9, 67, 21, 1985);
+    			add_location(div2, file$a, 65, 8, 1862);
+    			add_location(br1, file$a, 67, 21, 1985);
     			attr_dev(div3, "class", "language-picker-option-right svelte-134k3sl");
-    			add_location(div3, file$9, 66, 8, 1921);
+    			add_location(div3, file$a, 66, 8, 1921);
     			attr_dev(button1, "class", button1_class_value = "language-picker-option-MN " + /*monClass*/ ctx[2] + " svelte-134k3sl");
-    			add_location(button1, file$9, 64, 4, 1778);
+    			add_location(button1, file$a, 64, 4, 1778);
     			attr_dev(div4, "class", div4_class_value = "language-picker-panel " + /*className*/ ctx[0] + " svelte-134k3sl");
     			set_style(div4, "visibility", "hidden");
-    			add_location(div4, file$9, 57, 0, 1426);
+    			add_location(div4, file$a, 57, 0, 1426);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1363,7 +1407,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$9.name,
+    		id: create_fragment$a.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1372,7 +1416,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$9($$self, $$props, $$invalidate) {
+    function instance$a($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("LanguagePickerPanel", slots, []);
     	let className = "";
@@ -1479,21 +1523,21 @@ var app = (function () {
     class LanguagePickerPanel extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$9, create_fragment$9, safe_not_equal, {});
+    		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "LanguagePickerPanel",
     			options,
-    			id: create_fragment$9.name
+    			id: create_fragment$a.name
     		});
     	}
     }
 
     /* src/components/taskbar/LanguagePicker.svelte generated by Svelte v3.38.2 */
-    const file$8 = "src/components/taskbar/LanguagePicker.svelte";
+    const file$9 = "src/components/taskbar/LanguagePicker.svelte";
 
-    function create_fragment$8(ctx) {
+    function create_fragment$9(ctx) {
     	let button;
     	let p;
     	let t0;
@@ -1512,9 +1556,9 @@ var app = (function () {
     			t1 = space();
     			create_component(languagepickerpanel.$$.fragment);
     			attr_dev(p, "class", "svelte-12zm8z3");
-    			add_location(p, file$8, 25, 4, 644);
+    			add_location(p, file$9, 25, 4, 644);
     			attr_dev(button, "class", "svelte-12zm8z3");
-    			add_location(button, file$8, 24, 0, 612);
+    			add_location(button, file$9, 24, 0, 612);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1555,7 +1599,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$8.name,
+    		id: create_fragment$9.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1564,7 +1608,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$8($$self, $$props, $$invalidate) {
+    function instance$9($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("LanguagePicker", slots, []);
     	let languageAbbr = "";
@@ -1619,21 +1663,21 @@ var app = (function () {
     class LanguagePicker extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
+    		init(this, options, instance$9, create_fragment$9, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "LanguagePicker",
     			options,
-    			id: create_fragment$8.name
+    			id: create_fragment$9.name
     		});
     	}
     }
 
     /* src/components/taskbar/panels/CalendarPanel.svelte generated by Svelte v3.38.2 */
-    const file$7 = "src/components/taskbar/panels/CalendarPanel.svelte";
+    const file$8 = "src/components/taskbar/panels/CalendarPanel.svelte";
 
-    function get_each_context$1(ctx, list, i) {
+    function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
     	child_ctx[11] = list[i];
     	return child_ctx;
@@ -1645,7 +1689,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (100:24) {:else}
+    // (98:24) {:else}
     function create_else_block(ctx) {
     	let button;
     	let t_value = /*dateGrid*/ ctx[7][/*j*/ ctx[14]][/*i*/ ctx[11]].getDate() + "";
@@ -1657,7 +1701,7 @@ var app = (function () {
     			t = text(t_value);
     			set_style(button, "color", "grey");
     			attr_dev(button, "class", "svelte-6a8ex9");
-    			add_location(button, file$7, 100, 28, 3550);
+    			add_location(button, file$8, 98, 28, 3533);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -1675,15 +1719,15 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(100:24) {:else}",
+    		source: "(98:24) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (96:24) {#if dateGrid[j][i].getMonth() == now.getMonth()}
-    function create_if_block(ctx) {
+    // (94:24) {#if dateGrid[j][i].getMonth() == now.getMonth()}
+    function create_if_block$1(ctx) {
     	let button;
     	let t_value = /*dateGrid*/ ctx[7][/*j*/ ctx[14]][/*i*/ ctx[11]].getDate() + "";
     	let t;
@@ -1694,7 +1738,7 @@ var app = (function () {
     			t = text(t_value);
     			set_style(button, "color", "white");
     			attr_dev(button, "class", "svelte-6a8ex9");
-    			add_location(button, file$7, 96, 28, 3362);
+    			add_location(button, file$8, 94, 28, 3345);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -1710,23 +1754,23 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block.name,
+    		id: create_if_block$1.name,
     		type: "if",
-    		source: "(96:24) {#if dateGrid[j][i].getMonth() == now.getMonth()}",
+    		source: "(94:24) {#if dateGrid[j][i].getMonth() == now.getMonth()}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (95:20) {#each [...Array(6).keys()] as j}
+    // (93:20) {#each [...Array(6).keys()] as j}
     function create_each_block_1(ctx) {
     	let show_if;
     	let if_block_anchor;
 
     	function select_block_type(ctx, dirty) {
     		if (show_if == null || dirty & /*dateGrid, now*/ 192) show_if = !!(/*dateGrid*/ ctx[7][/*j*/ ctx[14]][/*i*/ ctx[11]].getMonth() == /*now*/ ctx[6].getMonth());
-    		if (show_if) return create_if_block;
+    		if (show_if) return create_if_block$1;
     		return create_else_block;
     	}
 
@@ -1765,15 +1809,15 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(95:20) {#each [...Array(6).keys()] as j}",
+    		source: "(93:20) {#each [...Array(6).keys()] as j}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (93:12) {#each [...Array(7).keys()] as i}
-    function create_each_block$1(ctx) {
+    // (91:12) {#each [...Array(7).keys()] as i}
+    function create_each_block(ctx) {
     	let div;
     	let t;
     	let each_value_1 = [...Array(6).keys()];
@@ -1794,7 +1838,7 @@ var app = (function () {
 
     			t = space();
     			attr_dev(div, "class", "svelte-6a8ex9");
-    			add_location(div, file$7, 93, 16, 3200);
+    			add_location(div, file$8, 91, 16, 3183);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -1838,16 +1882,16 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_each_block$1.name,
+    		id: create_each_block.name,
     		type: "each",
-    		source: "(93:12) {#each [...Array(7).keys()] as i}",
+    		source: "(91:12) {#each [...Array(7).keys()] as i}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$7(ctx) {
+    function create_fragment$8(ctx) {
     	let div19;
     	let div6;
     	let div1;
@@ -1903,7 +1947,7 @@ var app = (function () {
     	let each_blocks = [];
 
     	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
+    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
     	}
 
     	const block = {
@@ -1956,46 +2000,46 @@ var app = (function () {
     			}
 
     			attr_dev(div0, "class", "svelte-6a8ex9");
-    			add_location(div0, file$7, 69, 12, 2265);
+    			add_location(div0, file$8, 67, 12, 2248);
     			attr_dev(div1, "class", "upper-time svelte-6a8ex9");
-    			add_location(div1, file$7, 68, 8, 2228);
+    			add_location(div1, file$8, 66, 8, 2211);
     			attr_dev(div2, "class", "svelte-6a8ex9");
-    			add_location(div2, file$7, 72, 12, 2358);
+    			add_location(div2, file$8, 70, 12, 2341);
     			attr_dev(div3, "class", "upper-hour-type svelte-6a8ex9");
-    			add_location(div3, file$7, 71, 8, 2316);
+    			add_location(div3, file$8, 69, 8, 2299);
     			attr_dev(div4, "class", "svelte-6a8ex9");
-    			add_location(div4, file$7, 75, 12, 2449);
+    			add_location(div4, file$8, 73, 12, 2432);
     			attr_dev(div5, "class", "upper-date svelte-6a8ex9");
-    			add_location(div5, file$7, 74, 8, 2412);
+    			add_location(div5, file$8, 72, 8, 2395);
     			attr_dev(div6, "class", "upper svelte-6a8ex9");
-    			add_location(div6, file$7, 67, 4, 2200);
+    			add_location(div6, file$8, 65, 4, 2183);
     			attr_dev(div7, "class", "svelte-6a8ex9");
-    			add_location(div7, file$7, 80, 12, 2577);
+    			add_location(div7, file$8, 78, 12, 2560);
     			attr_dev(div8, "class", "lower-month-year svelte-6a8ex9");
-    			add_location(div8, file$7, 79, 8, 2534);
+    			add_location(div8, file$8, 77, 8, 2517);
     			attr_dev(div9, "class", "svelte-6a8ex9");
-    			add_location(div9, file$7, 83, 12, 2674);
+    			add_location(div9, file$8, 81, 12, 2657);
     			attr_dev(div10, "class", "svelte-6a8ex9");
-    			add_location(div10, file$7, 84, 12, 2734);
+    			add_location(div10, file$8, 82, 12, 2717);
     			attr_dev(div11, "class", "svelte-6a8ex9");
-    			add_location(div11, file$7, 85, 12, 2794);
+    			add_location(div11, file$8, 83, 12, 2777);
     			attr_dev(div12, "class", "svelte-6a8ex9");
-    			add_location(div12, file$7, 86, 12, 2855);
+    			add_location(div12, file$8, 84, 12, 2838);
     			attr_dev(div13, "class", "svelte-6a8ex9");
-    			add_location(div13, file$7, 87, 12, 2918);
+    			add_location(div13, file$8, 85, 12, 2901);
     			attr_dev(div14, "class", "svelte-6a8ex9");
-    			add_location(div14, file$7, 88, 12, 2980);
+    			add_location(div14, file$8, 86, 12, 2963);
     			attr_dev(div15, "class", "svelte-6a8ex9");
-    			add_location(div15, file$7, 89, 12, 3040);
+    			add_location(div15, file$8, 87, 12, 3023);
     			attr_dev(div16, "class", "lower-week-days svelte-6a8ex9");
-    			add_location(div16, file$7, 82, 8, 2632);
+    			add_location(div16, file$8, 80, 8, 2615);
     			attr_dev(div17, "class", "lower-days svelte-6a8ex9");
-    			add_location(div17, file$7, 91, 8, 3113);
+    			add_location(div17, file$8, 89, 8, 3096);
     			attr_dev(div18, "class", "lower svelte-6a8ex9");
-    			add_location(div18, file$7, 78, 4, 2506);
+    			add_location(div18, file$8, 76, 4, 2489);
     			attr_dev(div19, "class", div19_class_value = "calendar " + /*className*/ ctx[0] + " svelte-6a8ex9");
     			set_style(div19, "visibility", "hidden");
-    			add_location(div19, file$7, 66, 0, 2133);
+    			add_location(div19, file$8, 64, 0, 2116);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2067,12 +2111,12 @@ var app = (function () {
     				let i;
 
     				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context$1(ctx, each_value, i);
+    					const child_ctx = get_each_context(ctx, each_value, i);
 
     					if (each_blocks[i]) {
     						each_blocks[i].p(child_ctx, dirty);
     					} else {
-    						each_blocks[i] = create_each_block$1(child_ctx);
+    						each_blocks[i] = create_each_block(child_ctx);
     						each_blocks[i].c();
     						each_blocks[i].m(div17, null);
     					}
@@ -2099,7 +2143,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$7.name,
+    		id: create_fragment$8.name,
     		type: "component",
     		source: "",
     		ctx
@@ -2108,7 +2152,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$7($$self, $$props, $$invalidate) {
+    function instance$8($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("CalendarPanel", slots, []);
     	let className = "";
@@ -2177,13 +2221,7 @@ var app = (function () {
     		$$invalidate(5, lowerMonthYearText = `${month} ${year}`);
     	}
 
-    	setInterval(
-    		() => {
-    			updateTexts();
-    		},
-    		100
-    	);
-
+    	setInterval(updateTexts, 100);
     	updateDates();
     	updateTexts();
     	const writable_props = [];
@@ -2240,21 +2278,21 @@ var app = (function () {
     class CalendarPanel extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
+    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "CalendarPanel",
     			options,
-    			id: create_fragment$7.name
+    			id: create_fragment$8.name
     		});
     	}
     }
 
     /* src/components/taskbar/DateControl.svelte generated by Svelte v3.38.2 */
-    const file$6 = "src/components/taskbar/DateControl.svelte";
+    const file$7 = "src/components/taskbar/DateControl.svelte";
 
-    function create_fragment$6(ctx) {
+    function create_fragment$7(ctx) {
     	let button;
     	let div2;
     	let div0;
@@ -2281,13 +2319,13 @@ var app = (function () {
     			t3 = space();
     			create_component(calendarpanel.$$.fragment);
     			attr_dev(div0, "class", "date-control-time svelte-16px9y3");
-    			add_location(div0, file$6, 29, 8, 934);
+    			add_location(div0, file$7, 29, 8, 934);
     			attr_dev(div1, "class", "date-control-date svelte-16px9y3");
-    			add_location(div1, file$6, 30, 8, 990);
+    			add_location(div1, file$7, 30, 8, 990);
     			attr_dev(div2, "class", "date-control svelte-16px9y3");
-    			add_location(div2, file$6, 28, 4, 899);
+    			add_location(div2, file$7, 28, 4, 899);
     			attr_dev(button, "class", "svelte-16px9y3");
-    			add_location(button, file$6, 27, 0, 867);
+    			add_location(button, file$7, 27, 0, 867);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2333,7 +2371,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$6.name,
+    		id: create_fragment$7.name,
     		type: "component",
     		source: "",
     		ctx
@@ -2342,7 +2380,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$6($$self, $$props, $$invalidate) {
+    function instance$7($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("DateControl", slots, []);
 
@@ -2402,21 +2440,21 @@ var app = (function () {
     class DateControl extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
+    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "DateControl",
     			options,
-    			id: create_fragment$6.name
+    			id: create_fragment$7.name
     		});
     	}
     }
 
     /* src/components/taskbar/panels/NotificationPanel.svelte generated by Svelte v3.38.2 */
-    const file$5 = "src/components/taskbar/panels/NotificationPanel.svelte";
+    const file$6 = "src/components/taskbar/panels/NotificationPanel.svelte";
 
-    function create_fragment$5(ctx) {
+    function create_fragment$6(ctx) {
     	let div9;
     	let div0;
     	let t0_value = /*language*/ ctx[1].text.notificationPanel.noNewNotification + "";
@@ -2481,34 +2519,34 @@ var app = (function () {
     			div8 = element("div");
     			t12 = text(t12_value);
     			attr_dev(div0, "class", "no-noti-message svelte-148e0m4");
-    			add_location(div0, file$5, 20, 4, 610);
+    			add_location(div0, file$6, 20, 4, 610);
     			attr_dev(div1, "class", "location-icon svelte-148e0m4");
-    			add_location(div1, file$5, 24, 8, 749);
+    			add_location(div1, file$6, 24, 8, 749);
     			attr_dev(div2, "class", "card-text svelte-148e0m4");
-    			add_location(div2, file$5, 25, 8, 787);
+    			add_location(div2, file$6, 25, 8, 787);
     			attr_dev(button0, "class", "location svelte-148e0m4");
-    			add_location(button0, file$5, 23, 4, 715);
+    			add_location(button0, file$6, 23, 4, 715);
     			attr_dev(div3, "class", "night-light-icon svelte-148e0m4");
-    			add_location(div3, file$5, 28, 8, 914);
+    			add_location(div3, file$6, 28, 8, 914);
     			attr_dev(div4, "class", "card-text svelte-148e0m4");
-    			add_location(div4, file$5, 29, 8, 955);
+    			add_location(div4, file$6, 29, 8, 955);
     			attr_dev(button1, "class", "night-light svelte-148e0m4");
-    			add_location(button1, file$5, 27, 4, 877);
+    			add_location(button1, file$6, 27, 4, 877);
     			attr_dev(div5, "class", "screen-snip-icon svelte-148e0m4");
-    			add_location(div5, file$5, 34, 8, 1106);
+    			add_location(div5, file$6, 34, 8, 1106);
     			attr_dev(div6, "class", "card-text svelte-148e0m4");
-    			add_location(div6, file$5, 35, 8, 1147);
+    			add_location(div6, file$6, 35, 8, 1147);
     			attr_dev(button2, "class", "screen-snip svelte-148e0m4");
-    			add_location(button2, file$5, 33, 4, 1069);
+    			add_location(button2, file$6, 33, 4, 1069);
     			attr_dev(div7, "class", "network-icon svelte-148e0m4");
-    			add_location(div7, file$5, 40, 8, 1294);
+    			add_location(div7, file$6, 40, 8, 1294);
     			attr_dev(div8, "class", "card-text svelte-148e0m4");
-    			add_location(div8, file$5, 41, 8, 1331);
+    			add_location(div8, file$6, 41, 8, 1331);
     			attr_dev(button3, "class", "network svelte-148e0m4");
-    			add_location(button3, file$5, 39, 4, 1261);
+    			add_location(button3, file$6, 39, 4, 1261);
     			attr_dev(div9, "class", div9_class_value = "notification-panel " + /*className*/ ctx[0] + " svelte-148e0m4");
     			set_style(div9, "visibility", "hidden");
-    			add_location(div9, file$5, 19, 0, 533);
+    			add_location(div9, file$6, 19, 0, 533);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2562,7 +2600,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$5.name,
+    		id: create_fragment$6.name,
     		type: "component",
     		source: "",
     		ctx
@@ -2571,7 +2609,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$5($$self, $$props, $$invalidate) {
+    function instance$6($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("NotificationPanel", slots, []);
     	let className = "";
@@ -2624,21 +2662,21 @@ var app = (function () {
     class NotificationPanel extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$5, create_fragment$5, safe_not_equal, {});
+    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "NotificationPanel",
     			options,
-    			id: create_fragment$5.name
+    			id: create_fragment$6.name
     		});
     	}
     }
 
     /* src/components/taskbar/NotificationCenter.svelte generated by Svelte v3.38.2 */
-    const file$4 = "src/components/taskbar/NotificationCenter.svelte";
+    const file$5 = "src/components/taskbar/NotificationCenter.svelte";
 
-    function create_fragment$4(ctx) {
+    function create_fragment$5(ctx) {
     	let button;
     	let t;
     	let notificationpanel;
@@ -2653,7 +2691,7 @@ var app = (function () {
     			t = space();
     			create_component(notificationpanel.$$.fragment);
     			attr_dev(button, "class", "svelte-1rmwgfo");
-    			add_location(button, file$4, 10, 0, 296);
+    			add_location(button, file$5, 10, 0, 296);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2690,7 +2728,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$4.name,
+    		id: create_fragment$5.name,
     		type: "component",
     		source: "",
     		ctx
@@ -2699,7 +2737,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$4($$self, $$props, $$invalidate) {
+    function instance$5($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("NotificationCenter", slots, []);
 
@@ -2723,21 +2761,21 @@ var app = (function () {
     class NotificationCenter extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
+    		init(this, options, instance$5, create_fragment$5, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "NotificationCenter",
     			options,
-    			id: create_fragment$4.name
+    			id: create_fragment$5.name
     		});
     	}
     }
 
     /* src/components/taskbar/DesktopCorner.svelte generated by Svelte v3.38.2 */
-    const file$3 = "src/components/taskbar/DesktopCorner.svelte";
+    const file$4 = "src/components/taskbar/DesktopCorner.svelte";
 
-    function create_fragment$3(ctx) {
+    function create_fragment$4(ctx) {
     	let button;
     	let mounted;
     	let dispose;
@@ -2746,7 +2784,7 @@ var app = (function () {
     		c: function create() {
     			button = element("button");
     			attr_dev(button, "class", "svelte-1r9mxab");
-    			add_location(button, file$3, 9, 0, 181);
+    			add_location(button, file$4, 9, 0, 181);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2771,7 +2809,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$3.name,
+    		id: create_fragment$4.name,
     		type: "component",
     		source: "",
     		ctx
@@ -2780,7 +2818,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$3($$self, $$props, $$invalidate) {
+    function instance$4($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("DesktopCorner", slots, []);
 
@@ -2804,119 +2842,35 @@ var app = (function () {
     class DesktopCorner extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {});
+    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "DesktopCorner",
     			options,
-    			id: create_fragment$3.name
+    			id: create_fragment$4.name
     		});
     	}
     }
 
-    const TaskbarItems = writable([
-        {
-            windowId: "file-explorer",
-            pinned: true,
-            icon: "./vectors/icons8-folder.svg",
-        },
-        {
-            windowId: "edge-browser",
-            pinned: true,
-            icon: "./vectors/icons8-microsoft-edge.svg",
-        },
-    ]);
-
     /* src/components/taskbar/Taskbar.svelte generated by Svelte v3.38.2 */
-    const file$2 = "src/components/taskbar/Taskbar.svelte";
+    const file$3 = "src/components/taskbar/Taskbar.svelte";
 
-    function get_each_context(ctx, list, i) {
-    	const child_ctx = ctx.slice();
-    	child_ctx[1] = list[i];
-    	child_ctx[3] = i;
-    	return child_ctx;
-    }
-
-    // (18:4) {#each taskbarItems as taskbarItem, i}
-    function create_each_block(ctx) {
-    	let taskbaritem;
-    	let current;
-
-    	taskbaritem = new TaskbarItem({
-    			props: {
-    				itemPosition: /*i*/ ctx[3],
-    				iconPath: /*taskbarItem*/ ctx[1].icon
-    			},
-    			$$inline: true
-    		});
-
-    	const block = {
-    		c: function create() {
-    			create_component(taskbaritem.$$.fragment);
-    		},
-    		m: function mount(target, anchor) {
-    			mount_component(taskbaritem, target, anchor);
-    			current = true;
-    		},
-    		p: function update(ctx, dirty) {
-    			const taskbaritem_changes = {};
-    			if (dirty & /*taskbarItems*/ 1) taskbaritem_changes.iconPath = /*taskbarItem*/ ctx[1].icon;
-    			taskbaritem.$set(taskbaritem_changes);
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(taskbaritem.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(taskbaritem.$$.fragment, local);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			destroy_component(taskbaritem, detaching);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_each_block.name,
-    		type: "each",
-    		source: "(18:4) {#each taskbarItems as taskbarItem, i}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function create_fragment$2(ctx) {
+    function create_fragment$3(ctx) {
     	let div;
     	let startbutton;
     	let t0;
-    	let t1;
     	let systemtray;
-    	let t2;
+    	let t1;
     	let languagepicker;
-    	let t3;
+    	let t2;
     	let datecontrol;
-    	let t4;
+    	let t3;
     	let notificationcenter;
-    	let t5;
+    	let t4;
     	let desktopcorner;
     	let current;
     	startbutton = new StartButton({ $$inline: true });
-    	let each_value = /*taskbarItems*/ ctx[0];
-    	validate_each_argument(each_value);
-    	let each_blocks = [];
-
-    	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
-    	}
-
-    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
-    		each_blocks[i] = null;
-    	});
-
     	systemtray = new SystemTray({ $$inline: true });
     	languagepicker = new LanguagePicker({ $$inline: true });
     	datecontrol = new DateControl({ $$inline: true });
@@ -2928,23 +2882,17 @@ var app = (function () {
     			div = element("div");
     			create_component(startbutton.$$.fragment);
     			t0 = space();
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].c();
-    			}
-
-    			t1 = space();
     			create_component(systemtray.$$.fragment);
-    			t2 = space();
+    			t1 = space();
     			create_component(languagepicker.$$.fragment);
-    			t3 = space();
+    			t2 = space();
     			create_component(datecontrol.$$.fragment);
-    			t4 = space();
+    			t3 = space();
     			create_component(notificationcenter.$$.fragment);
-    			t5 = space();
+    			t4 = space();
     			create_component(desktopcorner.$$.fragment);
     			attr_dev(div, "class", "taskbar svelte-ahfudz");
-    			add_location(div, file$2, 15, 0, 568);
+    			add_location(div, file$3, 8, 0, 339);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2953,60 +2901,21 @@ var app = (function () {
     			insert_dev(target, div, anchor);
     			mount_component(startbutton, div, null);
     			append_dev(div, t0);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(div, null);
-    			}
-
-    			append_dev(div, t1);
     			mount_component(systemtray, div, null);
-    			append_dev(div, t2);
+    			append_dev(div, t1);
     			mount_component(languagepicker, div, null);
-    			append_dev(div, t3);
+    			append_dev(div, t2);
     			mount_component(datecontrol, div, null);
-    			append_dev(div, t4);
+    			append_dev(div, t3);
     			mount_component(notificationcenter, div, null);
-    			append_dev(div, t5);
+    			append_dev(div, t4);
     			mount_component(desktopcorner, div, null);
     			current = true;
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*taskbarItems*/ 1) {
-    				each_value = /*taskbarItems*/ ctx[0];
-    				validate_each_argument(each_value);
-    				let i;
-
-    				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context(ctx, each_value, i);
-
-    					if (each_blocks[i]) {
-    						each_blocks[i].p(child_ctx, dirty);
-    						transition_in(each_blocks[i], 1);
-    					} else {
-    						each_blocks[i] = create_each_block(child_ctx);
-    						each_blocks[i].c();
-    						transition_in(each_blocks[i], 1);
-    						each_blocks[i].m(div, t1);
-    					}
-    				}
-
-    				group_outros();
-
-    				for (i = each_value.length; i < each_blocks.length; i += 1) {
-    					out(i);
-    				}
-
-    				check_outros();
-    			}
-    		},
+    		p: noop,
     		i: function intro(local) {
     			if (current) return;
     			transition_in(startbutton.$$.fragment, local);
-
-    			for (let i = 0; i < each_value.length; i += 1) {
-    				transition_in(each_blocks[i]);
-    			}
-
     			transition_in(systemtray.$$.fragment, local);
     			transition_in(languagepicker.$$.fragment, local);
     			transition_in(datecontrol.$$.fragment, local);
@@ -3016,12 +2925,6 @@ var app = (function () {
     		},
     		o: function outro(local) {
     			transition_out(startbutton.$$.fragment, local);
-    			each_blocks = each_blocks.filter(Boolean);
-
-    			for (let i = 0; i < each_blocks.length; i += 1) {
-    				transition_out(each_blocks[i]);
-    			}
-
     			transition_out(systemtray.$$.fragment, local);
     			transition_out(languagepicker.$$.fragment, local);
     			transition_out(datecontrol.$$.fragment, local);
@@ -3032,12 +2935,139 @@ var app = (function () {
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div);
     			destroy_component(startbutton);
-    			destroy_each(each_blocks, detaching);
     			destroy_component(systemtray);
     			destroy_component(languagepicker);
     			destroy_component(datecontrol);
     			destroy_component(notificationcenter);
     			destroy_component(desktopcorner);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$3.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$3($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Taskbar", slots, []);
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Taskbar> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$capture_state = () => ({
+    		StartButton,
+    		SystemTray,
+    		LanguagePicker,
+    		DateControl,
+    		NotificationCenter,
+    		DesktopCorner
+    	});
+
+    	return [];
+    }
+
+    class Taskbar extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Taskbar",
+    			options,
+    			id: create_fragment$3.name
+    		});
+    	}
+    }
+
+    function fade(node, { delay = 0, duration = 400, easing = identity } = {}) {
+        const o = +getComputedStyle(node).opacity;
+        return {
+            delay,
+            duration,
+            easing,
+            css: t => `opacity: ${t * o}`
+        };
+    }
+
+    const TaskbarItemStates = {
+        unopened: 1,
+        opened: 2,
+        focused: 3,
+    };
+
+    /* src/components/window/TaskbarItem.svelte generated by Svelte v3.38.2 */
+
+    const file$2 = "src/components/window/TaskbarItem.svelte";
+
+    function create_fragment$2(ctx) {
+    	let button;
+    	let img;
+    	let img_src_value;
+    	let t;
+    	let div;
+    	let button_class_value;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			button = element("button");
+    			img = element("img");
+    			t = space();
+    			div = element("div");
+    			if (img.src !== (img_src_value = /*iconPath*/ ctx[1])) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "alt", "");
+    			attr_dev(img, "class", "taskbar-icon svelte-1btagh");
+    			add_location(img, file$2, 10, 4, 241);
+    			attr_dev(div, "class", "svelte-1btagh");
+    			add_location(div, file$2, 11, 4, 296);
+    			attr_dev(button, "class", button_class_value = "taskbar-item " + /*className*/ ctx[2] + " svelte-1btagh");
+    			set_style(button, "--item-position", /*itemPosition*/ ctx[0]);
+    			add_location(button, file$2, 5, 0, 132);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, button, anchor);
+    			append_dev(button, img);
+    			append_dev(button, t);
+    			append_dev(button, div);
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*click_handler*/ ctx[3], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (dirty & /*iconPath*/ 2 && img.src !== (img_src_value = /*iconPath*/ ctx[1])) {
+    				attr_dev(img, "src", img_src_value);
+    			}
+
+    			if (dirty & /*className*/ 4 && button_class_value !== (button_class_value = "taskbar-item " + /*className*/ ctx[2] + " svelte-1btagh")) {
+    				attr_dev(button, "class", button_class_value);
+    			}
+
+    			if (dirty & /*itemPosition*/ 1) {
+    				set_style(button, "--item-position", /*itemPosition*/ ctx[0]);
+    			}
+    		},
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(button);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
@@ -3054,62 +3084,91 @@ var app = (function () {
 
     function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("Taskbar", slots, []);
-    	let taskbarItems = get_store_value(TaskbarItems);
-
-    	TaskbarItems.subscribe(data => {
-    		$$invalidate(0, taskbarItems = data);
-    	});
-
-    	const writable_props = [];
+    	validate_slots("TaskbarItem", slots, []);
+    	let { itemPosition = 0 } = $$props;
+    	let { iconPath = "" } = $$props;
+    	let { className = "taskbar-item-unopened" } = $$props;
+    	const writable_props = ["itemPosition", "iconPath", "className"];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Taskbar> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<TaskbarItem> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({
-    		StartButton,
-    		TaskbarItem,
-    		SystemTray,
-    		LanguagePicker,
-    		DateControl,
-    		NotificationCenter,
-    		DesktopCorner,
-    		TaskbarItems,
-    		get: get_store_value,
-    		taskbarItems
-    	});
+    	function click_handler(event) {
+    		bubble($$self, event);
+    	}
+
+    	$$self.$$set = $$props => {
+    		if ("itemPosition" in $$props) $$invalidate(0, itemPosition = $$props.itemPosition);
+    		if ("iconPath" in $$props) $$invalidate(1, iconPath = $$props.iconPath);
+    		if ("className" in $$props) $$invalidate(2, className = $$props.className);
+    	};
+
+    	$$self.$capture_state = () => ({ itemPosition, iconPath, className });
 
     	$$self.$inject_state = $$props => {
-    		if ("taskbarItems" in $$props) $$invalidate(0, taskbarItems = $$props.taskbarItems);
+    		if ("itemPosition" in $$props) $$invalidate(0, itemPosition = $$props.itemPosition);
+    		if ("iconPath" in $$props) $$invalidate(1, iconPath = $$props.iconPath);
+    		if ("className" in $$props) $$invalidate(2, className = $$props.className);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [taskbarItems];
+    	return [itemPosition, iconPath, className, click_handler];
     }
 
-    class Taskbar extends SvelteComponentDev {
+    class TaskbarItem extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
+
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {
+    			itemPosition: 0,
+    			iconPath: 1,
+    			className: 2
+    		});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
-    			tagName: "Taskbar",
+    			tagName: "TaskbarItem",
     			options,
     			id: create_fragment$2.name
     		});
     	}
+
+    	get itemPosition() {
+    		throw new Error("<TaskbarItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set itemPosition(value) {
+    		throw new Error("<TaskbarItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get iconPath() {
+    		throw new Error("<TaskbarItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set iconPath(value) {
+    		throw new Error("<TaskbarItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get className() {
+    		throw new Error("<TaskbarItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set className(value) {
+    		throw new Error("<TaskbarItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
-    /* src/components/window/Base.svelte generated by Svelte v3.38.2 */
+    const Windows = writable({});
 
+    /* src/components/window/Base.svelte generated by Svelte v3.38.2 */
     const file$1 = "src/components/window/Base.svelte";
 
-    function create_fragment$1(ctx) {
+    // (156:0) {#if visible}
+    function create_if_block(ctx) {
     	let div3;
     	let div1;
     	let img;
@@ -3124,14 +3183,16 @@ var app = (function () {
     	let button1;
     	let t4;
     	let button2;
+    	let div1_class_value;
     	let t5;
     	let div2;
     	let div3_class_value;
+    	let div3_transition;
     	let current;
     	let mounted;
     	let dispose;
-    	const default_slot_template = /*#slots*/ ctx[20].default;
-    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[19], null);
+    	const default_slot_template = /*#slots*/ ctx[27].default;
+    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[26], null);
 
     	const block = {
     		c: function create() {
@@ -3154,32 +3215,30 @@ var app = (function () {
     			if (img.src !== (img_src_value = /*icon*/ ctx[0])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "");
     			attr_dev(img, "draggable", "false");
-    			attr_dev(img, "class", "svelte-jeehci");
-    			add_location(img, file$1, 54, 8, 1742);
-    			attr_dev(p, "class", "svelte-jeehci");
-    			add_location(p, file$1, 56, 12, 1841);
-    			attr_dev(div0, "class", "title-text-container svelte-jeehci");
-    			add_location(div0, file$1, 55, 8, 1794);
-    			attr_dev(button0, "class", "btn-minimize svelte-jeehci");
-    			add_location(button0, file$1, 58, 8, 1879);
-    			attr_dev(button1, "class", "btn-expand svelte-jeehci");
-    			add_location(button1, file$1, 59, 8, 1946);
-    			attr_dev(button2, "class", "btn-close svelte-jeehci");
-    			add_location(button2, file$1, 60, 8, 2011);
-    			attr_dev(div1, "class", "title-bar svelte-jeehci");
-    			add_location(div1, file$1, 53, 4, 1678);
-    			attr_dev(div2, "class", "form-body svelte-jeehci");
-    			add_location(div2, file$1, 62, 4, 2079);
-    			attr_dev(div3, "class", div3_class_value = "form " + /*formClass*/ ctx[6] + " svelte-jeehci");
-    			set_style(div3, "--top", /*topPx*/ ctx[5] + "px");
-    			set_style(div3, "--left", /*leftPx*/ ctx[4] + "px");
-    			set_style(div3, "--width", /*widthPx*/ ctx[7] + "px");
-    			set_style(div3, "--height", /*heightPx*/ ctx[8] + "px");
-    			set_style(div3, "--taskbar-index", /*taskbarIndex*/ ctx[2] + 1);
-    			add_location(div3, file$1, 46, 0, 1444);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    			attr_dev(img, "class", "svelte-16q06hq");
+    			add_location(img, file$1, 168, 12, 5291);
+    			attr_dev(p, "class", "svelte-16q06hq");
+    			add_location(p, file$1, 170, 16, 5398);
+    			attr_dev(div0, "class", "title-text-container svelte-16q06hq");
+    			add_location(div0, file$1, 169, 12, 5347);
+    			attr_dev(button0, "class", "btn-minimize svelte-16q06hq");
+    			add_location(button0, file$1, 172, 12, 5444);
+    			attr_dev(button1, "class", "btn-expand svelte-16q06hq");
+    			add_location(button1, file$1, 173, 12, 5515);
+    			attr_dev(button2, "class", "btn-close svelte-16q06hq");
+    			add_location(button2, file$1, 174, 12, 5584);
+    			attr_dev(div1, "class", div1_class_value = "title-bar " + /*titleBarClass*/ ctx[9] + " svelte-16q06hq");
+    			add_location(div1, file$1, 163, 8, 5132);
+    			attr_dev(div2, "class", "form-body svelte-16q06hq");
+    			add_location(div2, file$1, 176, 8, 5660);
+    			attr_dev(div3, "class", div3_class_value = "form " + /*formClass*/ ctx[7] + " svelte-16q06hq");
+    			set_style(div3, "--top", /*topPx*/ ctx[6] + "px");
+    			set_style(div3, "--left", /*leftPx*/ ctx[5] + "px");
+    			set_style(div3, "--width", /*widthPx*/ ctx[11] + "px");
+    			set_style(div3, "--height", /*heightPx*/ ctx[12] + "px");
+    			set_style(div3, "--taskbar-index", /*itemPosition*/ ctx[2]);
+    			set_style(div3, "z-index", /*zIndex*/ ctx[3]);
+    			add_location(div3, file$1, 156, 4, 4829);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div3, anchor);
@@ -3202,65 +3261,185 @@ var app = (function () {
     				default_slot.m(div2, null);
     			}
 
-    			/*div3_binding*/ ctx[21](div3);
+    			/*div3_binding*/ ctx[28](div3);
     			current = true;
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(window, "mousemove", /*onTitleMouseMove*/ ctx[11], false, false, false),
-    					listen_dev(window, "mouseup", /*onTitleMouseUp*/ ctx[10], false, false, false),
-    					listen_dev(button0, "click", /*onMinimizeClick*/ ctx[12], false, false, false),
-    					listen_dev(button1, "click", /*onMaximizeClick*/ ctx[13], false, false, false),
-    					listen_dev(button2, "click", /*onCloseClick*/ ctx[14], false, false, false),
-    					listen_dev(div1, "mousedown", /*onTitleMouseDown*/ ctx[9], false, false, false),
-    					listen_dev(div3, "dblclick", /*onMaximizeClick*/ ctx[13], false, false, false)
+    					listen_dev(button0, "click", /*onMinimizeClick*/ ctx[16], false, false, false),
+    					listen_dev(button1, "click", /*onMaximizeClick*/ ctx[17], false, false, false),
+    					listen_dev(button2, "click", /*onCloseClick*/ ctx[18], false, false, false),
+    					listen_dev(div1, "mousedown", /*onTitleMouseDown*/ ctx[13], false, false, false),
+    					listen_dev(div1, "dblclick", /*onMaximizeClick*/ ctx[17], false, false, false),
+    					listen_dev(div3, "mousedown", /*takeFocus*/ ctx[19], false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (!current || dirty & /*icon*/ 1 && img.src !== (img_src_value = /*icon*/ ctx[0])) {
+    		p: function update(ctx, dirty) {
+    			if (!current || dirty[0] & /*icon*/ 1 && img.src !== (img_src_value = /*icon*/ ctx[0])) {
     				attr_dev(img, "src", img_src_value);
     			}
 
-    			if (!current || dirty & /*title*/ 2) set_data_dev(t1, /*title*/ ctx[1]);
+    			if (!current || dirty[0] & /*title*/ 2) set_data_dev(t1, /*title*/ ctx[1]);
+
+    			if (!current || dirty[0] & /*titleBarClass*/ 512 && div1_class_value !== (div1_class_value = "title-bar " + /*titleBarClass*/ ctx[9] + " svelte-16q06hq")) {
+    				attr_dev(div1, "class", div1_class_value);
+    			}
 
     			if (default_slot) {
-    				if (default_slot.p && (!current || dirty & /*$$scope*/ 524288)) {
-    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[19], dirty, null, null);
+    				if (default_slot.p && (!current || dirty[0] & /*$$scope*/ 67108864)) {
+    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[26], dirty, null, null);
     				}
     			}
 
-    			if (!current || dirty & /*formClass*/ 64 && div3_class_value !== (div3_class_value = "form " + /*formClass*/ ctx[6] + " svelte-jeehci")) {
+    			if (!current || dirty[0] & /*formClass*/ 128 && div3_class_value !== (div3_class_value = "form " + /*formClass*/ ctx[7] + " svelte-16q06hq")) {
     				attr_dev(div3, "class", div3_class_value);
     			}
 
-    			if (!current || dirty & /*topPx*/ 32) {
-    				set_style(div3, "--top", /*topPx*/ ctx[5] + "px");
+    			if (!current || dirty[0] & /*topPx*/ 64) {
+    				set_style(div3, "--top", /*topPx*/ ctx[6] + "px");
     			}
 
-    			if (!current || dirty & /*leftPx*/ 16) {
-    				set_style(div3, "--left", /*leftPx*/ ctx[4] + "px");
+    			if (!current || dirty[0] & /*leftPx*/ 32) {
+    				set_style(div3, "--left", /*leftPx*/ ctx[5] + "px");
     			}
 
-    			if (!current || dirty & /*taskbarIndex*/ 4) {
-    				set_style(div3, "--taskbar-index", /*taskbarIndex*/ ctx[2] + 1);
+    			if (!current || dirty[0] & /*itemPosition*/ 4) {
+    				set_style(div3, "--taskbar-index", /*itemPosition*/ ctx[2]);
+    			}
+
+    			if (!current || dirty[0] & /*zIndex*/ 8) {
+    				set_style(div3, "z-index", /*zIndex*/ ctx[3]);
     			}
     		},
     		i: function intro(local) {
     			if (current) return;
     			transition_in(default_slot, local);
+
+    			add_render_callback(() => {
+    				if (!div3_transition) div3_transition = create_bidirectional_transition(div3, fade, { duration: 100 }, true);
+    				div3_transition.run(1);
+    			});
+
     			current = true;
     		},
     		o: function outro(local) {
     			transition_out(default_slot, local);
+    			if (!div3_transition) div3_transition = create_bidirectional_transition(div3, fade, { duration: 100 }, false);
+    			div3_transition.run(0);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div3);
     			if (default_slot) default_slot.d(detaching);
-    			/*div3_binding*/ ctx[21](null);
+    			/*div3_binding*/ ctx[28](null);
+    			if (detaching && div3_transition) div3_transition.end();
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(156:0) {#if visible}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
+    	let t;
+    	let taskbaritem;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block = /*visible*/ ctx[8] && create_if_block(ctx);
+
+    	taskbaritem = new TaskbarItem({
+    			props: {
+    				itemPosition: /*itemPosition*/ ctx[2],
+    				iconPath: /*icon*/ ctx[0],
+    				className: /*taskbarClass*/ ctx[10]
+    			},
+    			$$inline: true
+    		});
+
+    	taskbaritem.$on("click", /*onTaskbarItemClick*/ ctx[20]);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			t = space();
+    			create_component(taskbaritem.$$.fragment);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert_dev(target, t, anchor);
+    			mount_component(taskbaritem, target, anchor);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(window, "mousemove", /*onTitleMouseMove*/ ctx[15], false, false, false),
+    					listen_dev(window, "mouseup", /*onTitleMouseUp*/ ctx[14], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (/*visible*/ ctx[8]) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+
+    					if (dirty[0] & /*visible*/ 256) {
+    						transition_in(if_block, 1);
+    					}
+    				} else {
+    					if_block = create_if_block(ctx);
+    					if_block.c();
+    					transition_in(if_block, 1);
+    					if_block.m(t.parentNode, t);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+
+    				transition_out(if_block, 1, 1, () => {
+    					if_block = null;
+    				});
+
+    				check_outros();
+    			}
+
+    			const taskbaritem_changes = {};
+    			if (dirty[0] & /*itemPosition*/ 4) taskbaritem_changes.itemPosition = /*itemPosition*/ ctx[2];
+    			if (dirty[0] & /*icon*/ 1) taskbaritem_changes.iconPath = /*icon*/ ctx[0];
+    			if (dirty[0] & /*taskbarClass*/ 1024) taskbaritem_changes.className = /*taskbarClass*/ ctx[10];
+    			taskbaritem.$set(taskbaritem_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			transition_in(taskbaritem.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			transition_out(taskbaritem.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+    			if (detaching) detach_dev(t);
+    			destroy_component(taskbaritem, detaching);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -3280,13 +3459,16 @@ var app = (function () {
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Base", slots, ['default']);
+    	
     	let { width = "50vw" } = $$props;
     	let { height = "50vh" } = $$props;
     	let { left = "25vw" } = $$props;
     	let { top = "10vh" } = $$props;
     	let { icon = "./vectors/email.svg" } = $$props;
     	let { title = "Title" } = $$props;
-    	let { taskbarIndex = 0 } = $$props;
+    	let { windowId = "" } = $$props;
+    	let { itemPosition = 0 } = $$props;
+    	let zIndex = 0;
     	let nodeRef;
     	let widthPx = +width.replace("vw", "") * document.documentElement.clientWidth / 100;
     	let heightPx = +height.replace("vh", "") * document.documentElement.clientHeight / 100;
@@ -3295,6 +3477,12 @@ var app = (function () {
     	let moving = false;
     	let maximized = false;
     	let formClass = "";
+    	let visible = false;
+    	let titleBarClass = "title-bar-focused";
+    	let taskbarItemState = TaskbarItemStates.unopened;
+    	let taskbarClass = "taskbar-item-unopened";
+    	const windowsStates = { minimized: 1, expanded: 2, maximized: 3 };
+    	let state = windowsStates.expanded;
 
     	function onTitleMouseDown() {
     		moving = true;
@@ -3306,31 +3494,150 @@ var app = (function () {
 
     	function onTitleMouseMove(e) {
     		if (moving && !maximized) {
-    			$$invalidate(4, leftPx += e.movementX);
-    			$$invalidate(5, topPx += e.movementY);
-    			$$invalidate(4, leftPx = Math.max(leftPx, -widthPx * 0.95));
-    			$$invalidate(4, leftPx = Math.min(leftPx, document.documentElement.clientWidth * 0.95));
-    			$$invalidate(5, topPx = Math.max(topPx, 0));
-    			$$invalidate(5, topPx = Math.min(topPx, document.documentElement.clientHeight * 0.95));
+    			$$invalidate(5, leftPx += e.movementX);
+    			$$invalidate(6, topPx += e.movementY);
+    			$$invalidate(5, leftPx = Math.max(leftPx, -widthPx * 0.95));
+    			$$invalidate(5, leftPx = Math.min(leftPx, document.documentElement.clientWidth * 0.95));
+    			$$invalidate(6, topPx = Math.max(topPx, 0));
+    			$$invalidate(6, topPx = Math.min(topPx, document.documentElement.clientHeight * 0.95));
     		}
     	}
 
     	function onMinimizeClick() {
-    		$$invalidate(6, formClass = "form-minimize");
+    		$$invalidate(7, formClass = "form-minimize");
+    		state = windowsStates.minimized;
+    		taskbarItemState = TaskbarItemStates.opened;
+    		$$invalidate(10, taskbarClass = "taskbar-item-opened");
     	}
 
     	function onMaximizeClick() {
-    		$$invalidate(6, formClass = maximized ? "form-shrink" : "form-maximize");
+    		$$invalidate(7, formClass = maximized ? "form-shrink" : "form-maximize");
+
+    		state = maximized
+    		? windowsStates.expanded
+    		: windowsStates.maximized;
+
     		maximized = !maximized;
     	}
 
     	function onCloseClick() {
-    		if (nodeRef.parentNode != null) {
-    			nodeRef.parentNode.removeChild(nodeRef);
+    		$$invalidate(8, visible = false);
+
+    		setTimeout(
+    			() => {
+    				$$invalidate(7, formClass = "");
+    				maximized = false;
+    			},
+    			100
+    		);
+
+    		// taskbarItemState = TaskbarItemStates.unopened;
+    		// taskbarClass = "taskbar-item-unopened";
+    		Windows.update(windows => {
+    			windows[windowId].taskbarItemState = TaskbarItemStates.unopened;
+    			return windows;
+    		});
+    	}
+
+    	function takeFocus() {
+    		Windows.update(windows => {
+    			let maxZ = -1;
+
+    			for (let key in windows) {
+    				maxZ = Math.max(maxZ, windows[key].zIndex);
+    				windows[key].focused = false;
+
+    				if (windows[key].taskbarItemState === TaskbarItemStates.focused) {
+    					windows[key].taskbarItemState = TaskbarItemStates.opened;
+    				}
+
+    				if (zIndex < windows[key].zIndex) {
+    					windows[key].zIndex--;
+    				}
+    			}
+
+    			windows[windowId].focused = true;
+    			windows[windowId].zIndex = maxZ;
+    			windows[windowId].taskbarItemState = TaskbarItemStates.focused;
+    			return windows;
+    		});
+    	}
+
+    	function onTaskbarItemClick() {
+    		switch (taskbarItemState) {
+    			case TaskbarItemStates.unopened:
+    				{
+    					taskbarItemState = TaskbarItemStates.focused;
+    					$$invalidate(10, taskbarClass = "taskbar-item-focused");
+    					$$invalidate(8, visible = true);
+    					takeFocus();
+    					break;
+    				}
+    			case TaskbarItemStates.opened:
+    				{
+    					taskbarItemState = TaskbarItemStates.focused;
+    					$$invalidate(10, taskbarClass = "taskbar-item-focused");
+
+    					if (state == windowsStates.minimized) {
+    						$$invalidate(7, formClass = "");
+    					}
+
+    					takeFocus();
+    					break;
+    				}
+    			case TaskbarItemStates.focused:
+    				{
+    					onMinimizeClick();
+    					break;
+    				}
     		}
     	}
 
-    	const writable_props = ["width", "height", "left", "top", "icon", "title", "taskbarIndex"];
+    	Windows.update(windows => {
+    		for (let key in windows) {
+    			if (key == windowId) continue;
+    			windows[key].zIndex++;
+    		}
+
+    		windows[windowId] = {
+    			focused: true,
+    			zIndex: 0,
+    			taskbarItemState: TaskbarItemStates.unopened
+    		};
+
+    		return windows;
+    	});
+
+    	Windows.subscribe(windows => {
+    		if (!windows[windowId]) return;
+
+    		$$invalidate(9, titleBarClass = windows[windowId].focused
+    		? "title-bar-focused"
+    		: "title-bar-unfocused");
+
+    		$$invalidate(3, zIndex = windows[windowId].zIndex);
+    		taskbarItemState = windows[windowId].taskbarItemState;
+
+    		switch (taskbarItemState) {
+    			case TaskbarItemStates.unopened:
+    				{
+    					$$invalidate(10, taskbarClass = "taskbar-item-unopened");
+    					break;
+    				}
+    			case TaskbarItemStates.opened:
+    				{
+    					$$invalidate(10, taskbarClass = "taskbar-item-opened");
+    					break;
+    				}
+    			case TaskbarItemStates.focused:
+    				{
+    					$$invalidate(10, taskbarClass = "taskbar-item-focused");
+    					break;
+    				}
+    		}
+    	});
+
+    	const writable_props = ["width", "height", "left", "top", "icon", "title", "windowId", "itemPosition"];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Base> was created with unknown prop '${key}'`);
@@ -3339,29 +3646,36 @@ var app = (function () {
     	function div3_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			nodeRef = $$value;
-    			$$invalidate(3, nodeRef);
+    			$$invalidate(4, nodeRef);
     		});
     	}
 
     	$$self.$$set = $$props => {
-    		if ("width" in $$props) $$invalidate(15, width = $$props.width);
-    		if ("height" in $$props) $$invalidate(16, height = $$props.height);
-    		if ("left" in $$props) $$invalidate(17, left = $$props.left);
-    		if ("top" in $$props) $$invalidate(18, top = $$props.top);
+    		if ("width" in $$props) $$invalidate(21, width = $$props.width);
+    		if ("height" in $$props) $$invalidate(22, height = $$props.height);
+    		if ("left" in $$props) $$invalidate(23, left = $$props.left);
+    		if ("top" in $$props) $$invalidate(24, top = $$props.top);
     		if ("icon" in $$props) $$invalidate(0, icon = $$props.icon);
     		if ("title" in $$props) $$invalidate(1, title = $$props.title);
-    		if ("taskbarIndex" in $$props) $$invalidate(2, taskbarIndex = $$props.taskbarIndex);
-    		if ("$$scope" in $$props) $$invalidate(19, $$scope = $$props.$$scope);
+    		if ("windowId" in $$props) $$invalidate(25, windowId = $$props.windowId);
+    		if ("itemPosition" in $$props) $$invalidate(2, itemPosition = $$props.itemPosition);
+    		if ("$$scope" in $$props) $$invalidate(26, $$scope = $$props.$$scope);
     	};
 
     	$$self.$capture_state = () => ({
+    		fade,
+    		TaskbarItemStates,
+    		TaskbarItem,
+    		Windows,
     		width,
     		height,
     		left,
     		top,
     		icon,
     		title,
-    		taskbarIndex,
+    		windowId,
+    		itemPosition,
+    		zIndex,
     		nodeRef,
     		widthPx,
     		heightPx,
@@ -3370,30 +3684,45 @@ var app = (function () {
     		moving,
     		maximized,
     		formClass,
+    		visible,
+    		titleBarClass,
+    		taskbarItemState,
+    		taskbarClass,
+    		windowsStates,
+    		state,
     		onTitleMouseDown,
     		onTitleMouseUp,
     		onTitleMouseMove,
     		onMinimizeClick,
     		onMaximizeClick,
-    		onCloseClick
+    		onCloseClick,
+    		takeFocus,
+    		onTaskbarItemClick
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("width" in $$props) $$invalidate(15, width = $$props.width);
-    		if ("height" in $$props) $$invalidate(16, height = $$props.height);
-    		if ("left" in $$props) $$invalidate(17, left = $$props.left);
-    		if ("top" in $$props) $$invalidate(18, top = $$props.top);
+    		if ("width" in $$props) $$invalidate(21, width = $$props.width);
+    		if ("height" in $$props) $$invalidate(22, height = $$props.height);
+    		if ("left" in $$props) $$invalidate(23, left = $$props.left);
+    		if ("top" in $$props) $$invalidate(24, top = $$props.top);
     		if ("icon" in $$props) $$invalidate(0, icon = $$props.icon);
     		if ("title" in $$props) $$invalidate(1, title = $$props.title);
-    		if ("taskbarIndex" in $$props) $$invalidate(2, taskbarIndex = $$props.taskbarIndex);
-    		if ("nodeRef" in $$props) $$invalidate(3, nodeRef = $$props.nodeRef);
-    		if ("widthPx" in $$props) $$invalidate(7, widthPx = $$props.widthPx);
-    		if ("heightPx" in $$props) $$invalidate(8, heightPx = $$props.heightPx);
-    		if ("leftPx" in $$props) $$invalidate(4, leftPx = $$props.leftPx);
-    		if ("topPx" in $$props) $$invalidate(5, topPx = $$props.topPx);
+    		if ("windowId" in $$props) $$invalidate(25, windowId = $$props.windowId);
+    		if ("itemPosition" in $$props) $$invalidate(2, itemPosition = $$props.itemPosition);
+    		if ("zIndex" in $$props) $$invalidate(3, zIndex = $$props.zIndex);
+    		if ("nodeRef" in $$props) $$invalidate(4, nodeRef = $$props.nodeRef);
+    		if ("widthPx" in $$props) $$invalidate(11, widthPx = $$props.widthPx);
+    		if ("heightPx" in $$props) $$invalidate(12, heightPx = $$props.heightPx);
+    		if ("leftPx" in $$props) $$invalidate(5, leftPx = $$props.leftPx);
+    		if ("topPx" in $$props) $$invalidate(6, topPx = $$props.topPx);
     		if ("moving" in $$props) moving = $$props.moving;
     		if ("maximized" in $$props) maximized = $$props.maximized;
-    		if ("formClass" in $$props) $$invalidate(6, formClass = $$props.formClass);
+    		if ("formClass" in $$props) $$invalidate(7, formClass = $$props.formClass);
+    		if ("visible" in $$props) $$invalidate(8, visible = $$props.visible);
+    		if ("titleBarClass" in $$props) $$invalidate(9, titleBarClass = $$props.titleBarClass);
+    		if ("taskbarItemState" in $$props) taskbarItemState = $$props.taskbarItemState;
+    		if ("taskbarClass" in $$props) $$invalidate(10, taskbarClass = $$props.taskbarClass);
+    		if ("state" in $$props) state = $$props.state;
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -3403,11 +3732,15 @@ var app = (function () {
     	return [
     		icon,
     		title,
-    		taskbarIndex,
+    		itemPosition,
+    		zIndex,
     		nodeRef,
     		leftPx,
     		topPx,
     		formClass,
+    		visible,
+    		titleBarClass,
+    		taskbarClass,
     		widthPx,
     		heightPx,
     		onTitleMouseDown,
@@ -3416,10 +3749,13 @@ var app = (function () {
     		onMinimizeClick,
     		onMaximizeClick,
     		onCloseClick,
+    		takeFocus,
+    		onTaskbarItemClick,
     		width,
     		height,
     		left,
     		top,
+    		windowId,
     		$$scope,
     		slots,
     		div3_binding
@@ -3430,15 +3766,24 @@ var app = (function () {
     	constructor(options) {
     		super(options);
 
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {
-    			width: 15,
-    			height: 16,
-    			left: 17,
-    			top: 18,
-    			icon: 0,
-    			title: 1,
-    			taskbarIndex: 2
-    		});
+    		init(
+    			this,
+    			options,
+    			instance$1,
+    			create_fragment$1,
+    			safe_not_equal,
+    			{
+    				width: 21,
+    				height: 22,
+    				left: 23,
+    				top: 24,
+    				icon: 0,
+    				title: 1,
+    				windowId: 25,
+    				itemPosition: 2
+    			},
+    			[-1, -1]
+    		);
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -3496,11 +3841,19 @@ var app = (function () {
     		throw new Error("<Base>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	get taskbarIndex() {
+    	get windowId() {
     		throw new Error("<Base>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set taskbarIndex(value) {
+    	set windowId(value) {
+    		throw new Error("<Base>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get itemPosition() {
+    		throw new Error("<Base>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set itemPosition(value) {
     		throw new Error("<Base>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -3511,25 +3864,78 @@ var app = (function () {
     function create_fragment(ctx) {
     	let main;
     	let div;
+    	let img;
+    	let img_src_value;
     	let t0;
     	let taskbar;
     	let t1;
-    	let window;
+    	let window0;
+    	let t2;
+    	let window1;
+    	let t3;
+    	let window2;
     	let current;
+    	let mounted;
+    	let dispose;
     	taskbar = new Taskbar({ $$inline: true });
-    	window = new Base({ $$inline: true });
+
+    	window0 = new Base({
+    			props: {
+    				windowId: "id1",
+    				left: "0vw",
+    				top: "0vh",
+    				width: "20vw",
+    				height: "20vh",
+    				itemPosition: 0
+    			},
+    			$$inline: true
+    		});
+
+    	window1 = new Base({
+    			props: {
+    				windowId: "id2",
+    				left: "0vw",
+    				top: "25vh",
+    				width: "20vw",
+    				height: "20vh",
+    				itemPosition: 1
+    			},
+    			$$inline: true
+    		});
+
+    	window2 = new Base({
+    			props: {
+    				windowId: "id3",
+    				left: "0vw",
+    				top: "50vh",
+    				width: "20vw",
+    				height: "20vh",
+    				itemPosition: 2
+    			},
+    			$$inline: true
+    		});
 
     	const block = {
     		c: function create() {
     			main = element("main");
     			div = element("div");
+    			img = element("img");
     			t0 = space();
     			create_component(taskbar.$$.fragment);
     			t1 = space();
-    			create_component(window.$$.fragment);
-    			attr_dev(div, "class", "background svelte-enufsi");
-    			add_location(div, file, 5, 4, 153);
-    			add_location(main, file, 4, 0, 142);
+    			create_component(window0.$$.fragment);
+    			t2 = space();
+    			create_component(window1.$$.fragment);
+    			t3 = space();
+    			create_component(window2.$$.fragment);
+    			if (img.src !== (img_src_value = "./vectors/Flat-Mountains.svg")) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "alt", "");
+    			attr_dev(img, "draggable", "false");
+    			attr_dev(img, "class", "svelte-111ne1a");
+    			add_location(img, file, 25, 8, 823);
+    			attr_dev(div, "class", "svelte-111ne1a");
+    			add_location(div, file, 24, 4, 780);
+    			add_location(main, file, 23, 0, 769);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3537,28 +3943,46 @@ var app = (function () {
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
     			append_dev(main, div);
+    			append_dev(div, img);
     			append_dev(main, t0);
     			mount_component(taskbar, main, null);
     			append_dev(main, t1);
-    			mount_component(window, main, null);
+    			mount_component(window0, main, null);
+    			append_dev(main, t2);
+    			mount_component(window1, main, null);
+    			append_dev(main, t3);
+    			mount_component(window2, main, null);
     			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(div, "click", /*onBackgroundClick*/ ctx[0], false, false, false);
+    				mounted = true;
+    			}
     		},
     		p: noop,
     		i: function intro(local) {
     			if (current) return;
     			transition_in(taskbar.$$.fragment, local);
-    			transition_in(window.$$.fragment, local);
+    			transition_in(window0.$$.fragment, local);
+    			transition_in(window1.$$.fragment, local);
+    			transition_in(window2.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
     			transition_out(taskbar.$$.fragment, local);
-    			transition_out(window.$$.fragment, local);
+    			transition_out(window0.$$.fragment, local);
+    			transition_out(window1.$$.fragment, local);
+    			transition_out(window2.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
     			destroy_component(taskbar);
-    			destroy_component(window);
+    			destroy_component(window0);
+    			destroy_component(window1);
+    			destroy_component(window2);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
@@ -3576,14 +4000,43 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("App", slots, []);
+    	
+
+    	function onBackgroundClick() {
+    		Windows.update(windows => {
+    			for (let key in windows) {
+    				windows[key].focused = false;
+
+    				if (windows[key].taskbarItemState == TaskbarItemStates.focused) {
+    					windows[key].taskbarItemState = TaskbarItemStates.opened;
+    				}
+    			}
+
+    			return windows;
+    		});
+
+    		ChosenPanel.update(data => {
+    			data.name = "";
+    			return data;
+    		});
+    	}
+
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({ Taskbar, Window: Base });
-    	return [];
+    	$$self.$capture_state = () => ({
+    		Taskbar,
+    		Window: Base,
+    		Windows,
+    		TaskbarItemStates,
+    		ChosenPanel,
+    		onBackgroundClick
+    	});
+
+    	return [onBackgroundClick];
     }
 
     class App extends SvelteComponentDev {

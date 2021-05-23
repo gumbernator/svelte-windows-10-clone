@@ -1,41 +1,13 @@
 <script lang="ts">
-    export let itemPosition: number;
-    export let iconPath: string;
-
-    const states = {
-        unopened: 1,
-        opened: 2,
-        focused: 3,
-    };
-
-    let state = states.unopened;
-    let className = "taskbar-item-unopened";
-
-    function onClick() {
-        switch (state) {
-            case states.unopened: {
-                state = states.opened;
-                className = "taskbar-item-opened";
-                break;
-            }
-            case states.opened: {
-                state = states.focused;
-                className = "taskbar-item-focused";
-                break;
-            }
-            case states.focused: {
-                state = states.opened;
-                className = "taskbar-item-opened";
-                break;
-            }
-        }
-    }
+    export let itemPosition = 0;
+    export let iconPath = "";
+    export let className = "taskbar-item-unopened";
 </script>
 
 <button
     class="taskbar-item {className}"
-    on:click={onClick}
     style="--item-position: {itemPosition};"
+    on:click
 >
     <img src={iconPath} alt="" class="taskbar-icon" />
     <div />
@@ -59,13 +31,13 @@
 
     .taskbar-item {
         position: absolute;
-        top: 0;
         left: calc(
-            var(--item-position) * var(--taskbar-height) + var(--taskbar-height) +
-                0.5vh + (var(--item-position) + 1) * 1px
+            var(--item-position) * (var(--taskbar-height) + 0.5vh) +
+                var(--taskbar-height) + 0.5vh + (var(--item-position) + 1) * 1px
         );
         bottom: 0;
-        width: var(--taskbar-height);
+        width: calc(var(--taskbar-height) + 0.5vh);
+        height: var(--taskbar-height);
         user-select: none;
         transition-property: background-color;
         z-index: 999;
