@@ -1,10 +1,13 @@
 <script lang="ts">
     import Taskbar from "./components/taskbar/Taskbar.svelte";
-    import Window from "./components/window/Base.svelte";
+    import Window from "./components/window/Window.svelte";
+
     import { Windows } from "./components/window/windows";
     import type { WindowPropType } from "./components/window/windows";
     import { TaskbarItemStates } from "./components/window/taskbarItems";
     import ChosenPanel from "./components/taskbar/chosenPanel";
+
+    import Calculator from "./components/window/forms/Calculator.svelte";
 
     function onBackgroundClick() {
         Windows.update((windows: WindowPropType) => {
@@ -33,28 +36,14 @@
     <Taskbar />
     <Window
         windowId="id1"
-        left="0vw"
-        top="0vh"
+        left="1vw"
+        top="1vh"
         width="20vw"
-        height="20vh"
-        itemPosition={0}
-    />
-    <Window
-        windowId="id2"
-        left="0vw"
-        top="25vh"
-        width="20vw"
-        height="20vh"
-        itemPosition={1}
-    />
-    <Window
-        windowId="id3"
-        left="0vw"
-        top="50vh"
-        width="20vw"
-        height="20vh"
-        itemPosition={2}
-    />
+        height="60vh"
+        minWidth="15vw"
+        minHeight="40vh"
+        itemPosition={0}><Calculator /></Window
+    >
 </main>
 
 <style>

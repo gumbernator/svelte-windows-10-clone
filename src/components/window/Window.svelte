@@ -128,11 +128,19 @@
         state = windowsStates.minimized;
         taskbarItemState = TaskbarItemStates.opened;
         taskbarClass = "taskbar-item-opened";
+        borderClass = "window-border-invisible";
     }
 
     function onMaximizeClick() {
         formClass = maximized ? "form-shrink" : "form-maximize";
         state = maximized ? windowsStates.expanded : windowsStates.maximized;
+        if (!maximized) {
+            borderClass = "window-border-invisible";
+        } else {
+            setTimeout(() => {
+                takeFocus();
+            }, 200);
+        }
         maximized = !maximized;
     }
 
@@ -217,6 +225,7 @@
         borderClass = windows[windowId].focused
             ? "window-border-focused"
             : "window-border-unfocused";
+        borderClass = maximized ? "window-border-invisible" : borderClass;
         zIndex = windows[windowId].zIndex;
         taskbarItemState = windows[windowId].taskbarItemState;
         switch (taskbarItemState) {
@@ -450,6 +459,10 @@
     .window-border-unfocused {
         position: absolute;
         background-color: var(--system-color-1);
+    }
+
+    .window-border-invisible {
+        visibility: hidden;
     }
 
     .top-border {
