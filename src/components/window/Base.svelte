@@ -8,6 +8,8 @@
     // Initializing all variables
     export let width = "50vw";
     export let height = "50vh";
+    export let minWidth = "10vw";
+    export let minHeight = "15vh";
     export let left = "25vw";
     export let top = "10vh";
     export let icon = "./vectors/email.svg";
@@ -27,12 +29,19 @@
         (+left.replace("vw", "") * document.documentElement.clientWidth) / 100;
     let topPx =
         (+top.replace("vh", "") * document.documentElement.clientHeight) / 100;
+    let minWidthPx =
+        (+minWidth.replace("vw", "") * document.documentElement.clientWidth) /
+        100;
+    let minHeightPx =
+        (+minHeight.replace("vh", "") * document.documentElement.clientHeight) /
+        100;
 
     let moving = false;
     let maximized = false;
     let formClass = "";
     let visible = false;
     let titleBarClass = "title-bar-focused";
+    let borderClass = "title-bar-focused";
 
     let taskbarItemState = TaskbarItemStates.unopened;
     let taskbarClass = "taskbar-item-unopened";
@@ -44,16 +53,47 @@
     };
     let state = windowsStates.expanded;
 
+    const pressPlaces = {
+        none: 0,
+        title: 1,
+        top: 2,
+        left: 3,
+        bottom: 4,
+        right: 5,
+    };
+    let pressedPlace = pressPlaces.none;
+
     function onTitleMouseDown() {
+        pressedPlace = pressPlaces.title;
         moving = true;
     }
 
-    function onTitleMouseUp() {
+    function onTopBorderDown() {
+        pressedPlace = pressPlaces.top;
+        takeFocus();
+    }
+    function onLeftBorderDown() {
+        pressedPlace = pressPlaces.left;
+        takeFocus();
+    }
+    function onBottomBorderDown() {
+        pressedPlace = pressPlaces.bottom;
+        takeFocus();
+    }
+    function onRightBorderDown() {
+        pressedPlace = pressPlaces.right;
+        takeFocus();
+    }
+
+    function onMouseUp() {
+        pressedPlace = pressPlaces.none;
         moving = false;
     }
 
-    function onTitleMouseMove(e: MouseEvent) {
-        if (moving && !maximized) {
+    function onMouseMove(e: MouseEvent) {
+        if (pressedPlace == pressPlaces.none) {
+            return;
+        } else if (pressedPlace == pressPlaces.title && moving && !maximized) {
             leftPx += e.movementX;
             topPx += e.movementY;
             leftPx = Math.max(leftPx, -widthPx * 0.95);
@@ -66,6 +106,20 @@
                 topPx,
                 document.documentElement.clientHeight * 0.95
             );
+        } else if (pressedPlace == pressPlaces.top) {
+            heightPx -= e.movementY;
+            heightPx = Math.max(minHeightPx, heightPx);
+            topPx += heightPx == minHeightPx ? 0 : e.movementY;
+        } else if (pressedPlace == pressPlaces.left) {
+            widthPx -= e.movementX;
+            widthPx = Math.max(minWidthPx, widthPx);
+            leftPx += widthPx == minWidthPx ? 0 : e.movementX;
+        } else if (pressedPlace == pressPlaces.bottom) {
+            heightPx += e.movementY;
+            heightPx = Math.max(minHeightPx, heightPx);
+        } else if (pressedPlace == pressPlaces.right) {
+            widthPx += e.movementX;
+            widthPx = Math.max(minWidthPx, widthPx);
         }
     }
 
@@ -88,8 +142,6 @@
             formClass = "";
             maximized = false;
         }, 100);
-        // taskbarItemState = TaskbarItemStates.unopened;
-        // taskbarClass = "taskbar-item-unopened";
 
         Windows.update((windows: WindowPropType) => {
             windows[windowId].taskbarItemState = TaskbarItemStates.unopened;
@@ -162,6 +214,9 @@
         titleBarClass = windows[windowId].focused
             ? "title-bar-focused"
             : "title-bar-unfocused";
+        borderClass = windows[windowId].focused
+            ? "window-border-focused"
+            : "window-border-unfocused";
         zIndex = windows[windowId].zIndex;
         taskbarItemState = windows[windowId].taskbarItemState;
         switch (taskbarItemState) {
@@ -206,6 +261,26 @@
             <slot />
         </div>
     </div>
+    <div
+        class="{borderClass} top-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        on:mousedown={onTopBorderDown}
+    />
+    <div
+        class="{borderClass} left-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        on:mousedown={onLeftBorderDown}
+    />
+    <div
+        class="{borderClass} bottom-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        on:mousedown={onBottomBorderDown}
+    />
+    <div
+        class="{borderClass} right-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        on:mousedown={onRightBorderDown}
+    />
 {/if}
 <TaskbarItem
     {itemPosition}
@@ -213,7 +288,7 @@
     className={taskbarClass}
     on:click={onTaskbarItemClick}
 />
-<svelte:window on:mousemove={onTitleMouseMove} on:mouseup={onTitleMouseUp} />
+<svelte:window on:mousemove={onMouseMove} on:mouseup={onMouseUp} />
 
 <style>
     .form {
@@ -223,8 +298,6 @@
         width: var(--width);
         height: var(--height);
         user-select: none;
-        resize: both;
-        overflow: auto;
     }
 
     .form-minimize {
@@ -367,5 +440,47 @@
 
     .btn-close:hover {
         background-color: crimson;
+    }
+
+    .window-border-focused {
+        position: absolute;
+        background-color: var(--system-color-2);
+    }
+
+    .window-border-unfocused {
+        position: absolute;
+        background-color: var(--system-color-1);
+    }
+
+    .top-border {
+        left: var(--left);
+        top: var(--top);
+        width: var(--width);
+        height: 2px;
+        cursor: n-resize;
+    }
+
+    .left-border {
+        left: var(--left);
+        top: var(--top);
+        height: var(--height);
+        width: 2px;
+        cursor: w-resize;
+    }
+
+    .bottom-border {
+        left: var(--left);
+        top: calc(var(--top) + var(--height));
+        width: calc(var(--width) + 2px);
+        height: 2px;
+        cursor: s-resize;
+    }
+
+    .right-border {
+        left: calc(var(--left) + var(--width));
+        top: var(--top);
+        height: var(--height);
+        width: 2px;
+        cursor: e-resize;
     }
 </style>
