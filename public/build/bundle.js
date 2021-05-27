@@ -3235,23 +3235,23 @@ var app = (function () {
     			if (img.src !== (img_src_value = /*icon*/ ctx[0])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "");
     			attr_dev(img, "draggable", "false");
-    			attr_dev(img, "class", "svelte-1wpv7xe");
+    			attr_dev(img, "class", "svelte-jg9s8j");
     			add_location(img, file$2, 234, 12, 7218);
-    			attr_dev(p, "class", "svelte-1wpv7xe");
+    			attr_dev(p, "class", "svelte-jg9s8j");
     			add_location(p, file$2, 236, 16, 7325);
-    			attr_dev(div0, "class", "title-text-container svelte-1wpv7xe");
+    			attr_dev(div0, "class", "title-text-container svelte-jg9s8j");
     			add_location(div0, file$2, 235, 12, 7274);
-    			attr_dev(button0, "class", "btn-minimize svelte-1wpv7xe");
+    			attr_dev(button0, "class", "btn-minimize svelte-jg9s8j");
     			add_location(button0, file$2, 238, 12, 7371);
-    			attr_dev(button1, "class", "btn-expand svelte-1wpv7xe");
+    			attr_dev(button1, "class", "btn-expand svelte-jg9s8j");
     			add_location(button1, file$2, 239, 12, 7442);
-    			attr_dev(button2, "class", "btn-close svelte-1wpv7xe");
+    			attr_dev(button2, "class", "btn-close svelte-jg9s8j");
     			add_location(button2, file$2, 240, 12, 7511);
-    			attr_dev(div1, "class", div1_class_value = "title-bar " + /*titleBarClass*/ ctx[11] + " svelte-1wpv7xe");
+    			attr_dev(div1, "class", div1_class_value = "title-bar " + /*titleBarClass*/ ctx[11] + " svelte-jg9s8j");
     			add_location(div1, file$2, 229, 8, 7059);
-    			attr_dev(div2, "class", "form-body svelte-1wpv7xe");
+    			attr_dev(div2, "class", "form-body svelte-jg9s8j");
     			add_location(div2, file$2, 242, 8, 7587);
-    			attr_dev(div3, "class", div3_class_value = "form " + /*formClass*/ ctx[9] + " svelte-1wpv7xe");
+    			attr_dev(div3, "class", div3_class_value = "form " + /*formClass*/ ctx[9] + " svelte-jg9s8j");
     			set_style(div3, "--top", /*topPx*/ ctx[8] + "px");
     			set_style(div3, "--left", /*leftPx*/ ctx[7] + "px");
     			set_style(div3, "--width", /*widthPx*/ ctx[5] + "px");
@@ -3259,28 +3259,28 @@ var app = (function () {
     			set_style(div3, "--taskbar-index", /*itemPosition*/ ctx[2]);
     			set_style(div3, "z-index", /*zIndex*/ ctx[3]);
     			add_location(div3, file$2, 222, 4, 6756);
-    			attr_dev(div4, "class", div4_class_value = "" + (/*borderClass*/ ctx[12] + " top-border" + " svelte-1wpv7xe"));
+    			attr_dev(div4, "class", div4_class_value = "" + (/*borderClass*/ ctx[12] + " top-border" + " svelte-jg9s8j"));
     			set_style(div4, "--top", /*topPx*/ ctx[8] + "px");
     			set_style(div4, "--left", /*leftPx*/ ctx[7] + "px");
     			set_style(div4, "--width", /*widthPx*/ ctx[5] + "px");
     			set_style(div4, "--height", /*heightPx*/ ctx[6] + "px");
     			set_style(div4, "z-index", /*zIndex*/ ctx[3]);
     			add_location(div4, file$2, 246, 4, 7662);
-    			attr_dev(div5, "class", div5_class_value = "" + (/*borderClass*/ ctx[12] + " left-border" + " svelte-1wpv7xe"));
+    			attr_dev(div5, "class", div5_class_value = "" + (/*borderClass*/ ctx[12] + " left-border" + " svelte-jg9s8j"));
     			set_style(div5, "--top", /*topPx*/ ctx[8] + "px");
     			set_style(div5, "--left", /*leftPx*/ ctx[7] + "px");
     			set_style(div5, "--width", /*widthPx*/ ctx[5] + "px");
     			set_style(div5, "--height", /*heightPx*/ ctx[6] + "px");
     			set_style(div5, "z-index", /*zIndex*/ ctx[3]);
     			add_location(div5, file$2, 251, 4, 7872);
-    			attr_dev(div6, "class", div6_class_value = "" + (/*borderClass*/ ctx[12] + " bottom-border" + " svelte-1wpv7xe"));
+    			attr_dev(div6, "class", div6_class_value = "" + (/*borderClass*/ ctx[12] + " bottom-border" + " svelte-jg9s8j"));
     			set_style(div6, "--top", /*topPx*/ ctx[8] + "px");
     			set_style(div6, "--left", /*leftPx*/ ctx[7] + "px");
     			set_style(div6, "--width", /*widthPx*/ ctx[5] + "px");
     			set_style(div6, "--height", /*heightPx*/ ctx[6] + "px");
     			set_style(div6, "z-index", /*zIndex*/ ctx[3]);
     			add_location(div6, file$2, 256, 4, 8084);
-    			attr_dev(div7, "class", div7_class_value = "" + (/*borderClass*/ ctx[12] + " right-border" + " svelte-1wpv7xe"));
+    			attr_dev(div7, "class", div7_class_value = "" + (/*borderClass*/ ctx[12] + " right-border" + " svelte-jg9s8j"));
     			set_style(div7, "--top", /*topPx*/ ctx[8] + "px");
     			set_style(div7, "--left", /*leftPx*/ ctx[7] + "px");
     			set_style(div7, "--width", /*widthPx*/ ctx[5] + "px");
@@ -3344,7 +3344,7 @@ var app = (function () {
 
     			if (!current || dirty[0] & /*title*/ 2) set_data_dev(t1, /*title*/ ctx[1]);
 
-    			if (!current || dirty[0] & /*titleBarClass*/ 2048 && div1_class_value !== (div1_class_value = "title-bar " + /*titleBarClass*/ ctx[11] + " svelte-1wpv7xe")) {
+    			if (!current || dirty[0] & /*titleBarClass*/ 2048 && div1_class_value !== (div1_class_value = "title-bar " + /*titleBarClass*/ ctx[11] + " svelte-jg9s8j")) {
     				attr_dev(div1, "class", div1_class_value);
     			}
 
@@ -3354,7 +3354,7 @@ var app = (function () {
     				}
     			}
 
-    			if (!current || dirty[0] & /*formClass*/ 512 && div3_class_value !== (div3_class_value = "form " + /*formClass*/ ctx[9] + " svelte-1wpv7xe")) {
+    			if (!current || dirty[0] & /*formClass*/ 512 && div3_class_value !== (div3_class_value = "form " + /*formClass*/ ctx[9] + " svelte-jg9s8j")) {
     				attr_dev(div3, "class", div3_class_value);
     			}
 
@@ -3382,7 +3382,7 @@ var app = (function () {
     				set_style(div3, "z-index", /*zIndex*/ ctx[3]);
     			}
 
-    			if (!current || dirty[0] & /*borderClass*/ 4096 && div4_class_value !== (div4_class_value = "" + (/*borderClass*/ ctx[12] + " top-border" + " svelte-1wpv7xe"))) {
+    			if (!current || dirty[0] & /*borderClass*/ 4096 && div4_class_value !== (div4_class_value = "" + (/*borderClass*/ ctx[12] + " top-border" + " svelte-jg9s8j"))) {
     				attr_dev(div4, "class", div4_class_value);
     			}
 
@@ -3406,7 +3406,7 @@ var app = (function () {
     				set_style(div4, "z-index", /*zIndex*/ ctx[3]);
     			}
 
-    			if (!current || dirty[0] & /*borderClass*/ 4096 && div5_class_value !== (div5_class_value = "" + (/*borderClass*/ ctx[12] + " left-border" + " svelte-1wpv7xe"))) {
+    			if (!current || dirty[0] & /*borderClass*/ 4096 && div5_class_value !== (div5_class_value = "" + (/*borderClass*/ ctx[12] + " left-border" + " svelte-jg9s8j"))) {
     				attr_dev(div5, "class", div5_class_value);
     			}
 
@@ -3430,7 +3430,7 @@ var app = (function () {
     				set_style(div5, "z-index", /*zIndex*/ ctx[3]);
     			}
 
-    			if (!current || dirty[0] & /*borderClass*/ 4096 && div6_class_value !== (div6_class_value = "" + (/*borderClass*/ ctx[12] + " bottom-border" + " svelte-1wpv7xe"))) {
+    			if (!current || dirty[0] & /*borderClass*/ 4096 && div6_class_value !== (div6_class_value = "" + (/*borderClass*/ ctx[12] + " bottom-border" + " svelte-jg9s8j"))) {
     				attr_dev(div6, "class", div6_class_value);
     			}
 
@@ -3454,7 +3454,7 @@ var app = (function () {
     				set_style(div6, "z-index", /*zIndex*/ ctx[3]);
     			}
 
-    			if (!current || dirty[0] & /*borderClass*/ 4096 && div7_class_value !== (div7_class_value = "" + (/*borderClass*/ ctx[12] + " right-border" + " svelte-1wpv7xe"))) {
+    			if (!current || dirty[0] & /*borderClass*/ 4096 && div7_class_value !== (div7_class_value = "" + (/*borderClass*/ ctx[12] + " right-border" + " svelte-jg9s8j"))) {
     				attr_dev(div7, "class", div7_class_value);
     			}
 
@@ -4162,6 +4162,7 @@ var app = (function () {
     	let div2;
     	let div0;
     	let p;
+    	let t0;
     	let t1;
     	let div1;
     	let button0;
@@ -4199,13 +4200,15 @@ var app = (function () {
     	let button16;
     	let t35;
     	let button17;
+    	let mounted;
+    	let dispose;
 
     	const block = {
     		c: function create() {
     			div2 = element("div");
     			div0 = element("div");
     			p = element("p");
-    			p.textContent = "resultasdddd";
+    			t0 = text(/*text*/ ctx[0]);
     			t1 = space();
     			div1 = element("div");
     			button0 = element("button");
@@ -4261,54 +4264,54 @@ var app = (function () {
     			t35 = space();
     			button17 = element("button");
     			button17.textContent = "=";
-    			attr_dev(p, "class", "svelte-pn7gai");
-    			add_location(p, file$1, 5, 8, 106);
-    			attr_dev(div0, "class", "top-section svelte-pn7gai");
-    			add_location(div0, file$1, 4, 4, 72);
+    			attr_dev(p, "class", "svelte-7l2h0t");
+    			add_location(p, file$1, 15, 8, 256);
+    			attr_dev(div0, "class", "top-section svelte-7l2h0t");
+    			add_location(div0, file$1, 14, 4, 222);
     			set_style(button0, "grid-column", "span 2");
-    			set_style(button0, "background-color", "#ff2d7a");
-    			attr_dev(button0, "class", "svelte-pn7gai");
-    			add_location(button0, file$1, 9, 8, 179);
-    			attr_dev(button1, "class", "svelte-pn7gai");
-    			add_location(button1, file$1, 12, 8, 284);
-    			attr_dev(button2, "class", "svelte-pn7gai");
-    			add_location(button2, file$1, 13, 8, 311);
-    			attr_dev(button3, "class", "svelte-pn7gai");
-    			add_location(button3, file$1, 14, 8, 338);
-    			attr_dev(button4, "class", "svelte-pn7gai");
-    			add_location(button4, file$1, 15, 8, 365);
-    			attr_dev(button5, "class", "svelte-pn7gai");
-    			add_location(button5, file$1, 16, 8, 392);
-    			attr_dev(button6, "class", "svelte-pn7gai");
-    			add_location(button6, file$1, 17, 8, 419);
-    			attr_dev(button7, "class", "svelte-pn7gai");
-    			add_location(button7, file$1, 18, 8, 446);
-    			attr_dev(button8, "class", "svelte-pn7gai");
-    			add_location(button8, file$1, 19, 8, 473);
-    			attr_dev(button9, "class", "svelte-pn7gai");
-    			add_location(button9, file$1, 20, 8, 500);
+    			set_style(button0, "background-color", "rgba(60, 60, 60)");
+    			attr_dev(button0, "class", "svelte-7l2h0t");
+    			add_location(button0, file$1, 19, 8, 323);
+    			attr_dev(button1, "class", "svelte-7l2h0t");
+    			add_location(button1, file$1, 23, 8, 465);
+    			attr_dev(button2, "class", "svelte-7l2h0t");
+    			add_location(button2, file$1, 24, 8, 527);
+    			attr_dev(button3, "class", "svelte-7l2h0t");
+    			add_location(button3, file$1, 25, 8, 589);
+    			attr_dev(button4, "class", "svelte-7l2h0t");
+    			add_location(button4, file$1, 26, 8, 651);
+    			attr_dev(button5, "class", "svelte-7l2h0t");
+    			add_location(button5, file$1, 27, 8, 713);
+    			attr_dev(button6, "class", "svelte-7l2h0t");
+    			add_location(button6, file$1, 28, 8, 775);
+    			attr_dev(button7, "class", "svelte-7l2h0t");
+    			add_location(button7, file$1, 29, 8, 837);
+    			attr_dev(button8, "class", "svelte-7l2h0t");
+    			add_location(button8, file$1, 30, 8, 899);
+    			attr_dev(button9, "class", "svelte-7l2h0t");
+    			add_location(button9, file$1, 31, 8, 961);
     			set_style(button10, "grid-row", "span 2");
-    			attr_dev(button10, "class", "svelte-pn7gai");
-    			add_location(button10, file$1, 21, 8, 527);
-    			attr_dev(button11, "class", "svelte-pn7gai");
-    			add_location(button11, file$1, 22, 8, 580);
-    			attr_dev(button12, "class", "svelte-pn7gai");
-    			add_location(button12, file$1, 23, 8, 607);
-    			attr_dev(button13, "class", "svelte-pn7gai");
-    			add_location(button13, file$1, 24, 8, 634);
-    			attr_dev(button14, "class", "svelte-pn7gai");
-    			add_location(button14, file$1, 25, 8, 661);
-    			attr_dev(button15, "class", "svelte-pn7gai");
-    			add_location(button15, file$1, 26, 8, 688);
-    			attr_dev(button16, "class", "svelte-pn7gai");
-    			add_location(button16, file$1, 27, 8, 716);
-    			set_style(button17, "background-color", "#0596d9");
-    			attr_dev(button17, "class", "svelte-pn7gai");
-    			add_location(button17, file$1, 28, 8, 743);
-    			attr_dev(div1, "class", "bottom-section svelte-pn7gai");
-    			add_location(div1, file$1, 8, 4, 142);
-    			attr_dev(div2, "class", "calculator svelte-pn7gai");
-    			add_location(div2, file$1, 3, 0, 43);
+    			attr_dev(button10, "class", "svelte-7l2h0t");
+    			add_location(button10, file$1, 32, 8, 1023);
+    			attr_dev(button11, "class", "svelte-7l2h0t");
+    			add_location(button11, file$1, 35, 8, 1133);
+    			attr_dev(button12, "class", "svelte-7l2h0t");
+    			add_location(button12, file$1, 36, 8, 1195);
+    			attr_dev(button13, "class", "svelte-7l2h0t");
+    			add_location(button13, file$1, 37, 8, 1257);
+    			attr_dev(button14, "class", "svelte-7l2h0t");
+    			add_location(button14, file$1, 38, 8, 1319);
+    			attr_dev(button15, "class", "svelte-7l2h0t");
+    			add_location(button15, file$1, 39, 8, 1381);
+    			attr_dev(button16, "class", "svelte-7l2h0t");
+    			add_location(button16, file$1, 40, 8, 1445);
+    			set_style(button17, "background-color", "rgba(60, 60, 60)");
+    			attr_dev(button17, "class", "svelte-7l2h0t");
+    			add_location(button17, file$1, 41, 8, 1507);
+    			attr_dev(div1, "class", "bottom-section svelte-7l2h0t");
+    			add_location(div1, file$1, 18, 4, 286);
+    			attr_dev(div2, "class", "calculator svelte-7l2h0t");
+    			add_location(div2, file$1, 13, 0, 193);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -4317,6 +4320,7 @@ var app = (function () {
     			insert_dev(target, div2, anchor);
     			append_dev(div2, div0);
     			append_dev(div0, p);
+    			append_dev(p, t0);
     			append_dev(div2, t1);
     			append_dev(div2, div1);
     			append_dev(div1, button0);
@@ -4354,12 +4358,41 @@ var app = (function () {
     			append_dev(div1, button16);
     			append_dev(div1, t35);
     			append_dev(div1, button17);
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(button0, "click", /*clear*/ ctx[1], false, false, false),
+    					listen_dev(button1, "click", /*click_handler*/ ctx[4], false, false, false),
+    					listen_dev(button2, "click", /*click_handler_1*/ ctx[5], false, false, false),
+    					listen_dev(button3, "click", /*click_handler_2*/ ctx[6], false, false, false),
+    					listen_dev(button4, "click", /*click_handler_3*/ ctx[7], false, false, false),
+    					listen_dev(button5, "click", /*click_handler_4*/ ctx[8], false, false, false),
+    					listen_dev(button6, "click", /*click_handler_5*/ ctx[9], false, false, false),
+    					listen_dev(button7, "click", /*click_handler_6*/ ctx[10], false, false, false),
+    					listen_dev(button8, "click", /*click_handler_7*/ ctx[11], false, false, false),
+    					listen_dev(button9, "click", /*click_handler_8*/ ctx[12], false, false, false),
+    					listen_dev(button10, "click", /*click_handler_9*/ ctx[13], false, false, false),
+    					listen_dev(button11, "click", /*click_handler_10*/ ctx[14], false, false, false),
+    					listen_dev(button12, "click", /*click_handler_11*/ ctx[15], false, false, false),
+    					listen_dev(button13, "click", /*click_handler_12*/ ctx[16], false, false, false),
+    					listen_dev(button14, "click", /*click_handler_13*/ ctx[17], false, false, false),
+    					listen_dev(button15, "click", /*click_handler_14*/ ctx[18], false, false, false),
+    					listen_dev(button16, "click", /*click_handler_15*/ ctx[19], false, false, false),
+    					listen_dev(button17, "click", /*equals*/ ctx[3], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
     		},
-    		p: noop,
+    		p: function update(ctx, [dirty]) {
+    			if (dirty & /*text*/ 1) set_data_dev(t0, /*text*/ ctx[0]);
+    		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div2);
+    			mounted = false;
+    			run_all(dispose);
     		}
     	};
 
@@ -4374,16 +4407,77 @@ var app = (function () {
     	return block;
     }
 
-    function instance$1($$self, $$props) {
+    function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Calculator", slots, []);
+    	let text = "";
+
+    	function clear() {
+    		$$invalidate(0, text = "");
+    	}
+
+    	function addCharacter(char) {
+    		$$invalidate(0, text += char);
+    	}
+
+    	function equals() {
+    		$$invalidate(0, text = "something :P");
+    	}
+
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Calculator> was created with unknown prop '${key}'`);
     	});
 
-    	return [];
+    	const click_handler = () => addCharacter("/");
+    	const click_handler_1 = () => addCharacter("*");
+    	const click_handler_2 = () => addCharacter("7");
+    	const click_handler_3 = () => addCharacter("8");
+    	const click_handler_4 = () => addCharacter("9");
+    	const click_handler_5 = () => addCharacter("-");
+    	const click_handler_6 = () => addCharacter("4");
+    	const click_handler_7 = () => addCharacter("5");
+    	const click_handler_8 = () => addCharacter("6");
+    	const click_handler_9 = () => addCharacter("+");
+    	const click_handler_10 = () => addCharacter("1");
+    	const click_handler_11 = () => addCharacter("2");
+    	const click_handler_12 = () => addCharacter("3");
+    	const click_handler_13 = () => addCharacter("0");
+    	const click_handler_14 = () => addCharacter("00");
+    	const click_handler_15 = () => addCharacter(".");
+    	$$self.$capture_state = () => ({ text, clear, addCharacter, equals });
+
+    	$$self.$inject_state = $$props => {
+    		if ("text" in $$props) $$invalidate(0, text = $$props.text);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [
+    		text,
+    		clear,
+    		addCharacter,
+    		equals,
+    		click_handler,
+    		click_handler_1,
+    		click_handler_2,
+    		click_handler_3,
+    		click_handler_4,
+    		click_handler_5,
+    		click_handler_6,
+    		click_handler_7,
+    		click_handler_8,
+    		click_handler_9,
+    		click_handler_10,
+    		click_handler_11,
+    		click_handler_12,
+    		click_handler_13,
+    		click_handler_14,
+    		click_handler_15
+    	];
     }
 
     class Calculator extends SvelteComponentDev {

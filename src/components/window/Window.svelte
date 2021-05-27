@@ -306,7 +306,6 @@
         top: var(--top);
         width: var(--width);
         height: var(--height);
-        user-select: none;
     }
 
     .form-minimize {
