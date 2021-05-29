@@ -35,13 +35,15 @@
 
     <Taskbar />
     <Window
-        windowId="id1"
-        left="1vw"
-        top="1vh"
+        windowId="_calculator"
+        left="25vw"
+        top="10vh"
         width="20vw"
         height="60vh"
         minWidth="15vw"
         minHeight="40vh"
+        icon="./vectors/calculator.svg"
+        title="Calculator"
         itemPosition={0}><Calculator /></Window
     >
 </main>

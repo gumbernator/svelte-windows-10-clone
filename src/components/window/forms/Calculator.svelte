@@ -1,23 +1,84 @@
 <script lang="ts">
-    let text = "";
+    let topText = "";
+    let bottomText = "0";
+    let operand = "";
+    const operands = /\+|-|\*|\//;
 
     function clear() {
-        text = "";
+        topText = "";
+        bottomText = "0";
+        operand = "";
     }
 
     function addCharacter(char: string) {
-        text += char;
+        if (char === ".") {
+            if (!bottomText.includes(".")) {
+                bottomText += char;
+            }
+            return;
+        }
+        if (char.match(operands) && topText !== "") {
+            return;
+        }
+        if (
+            char.match(operands) &&
+            (bottomText.includes("+") ||
+                bottomText.includes("-") ||
+                bottomText.includes("*") ||
+                bottomText.includes("/") ||
+                topText !== "")
+        ) {
+            return;
+        }
+        if (char.match(operands)) {
+            operand = char;
+            topText = bottomText;
+            bottomText = "0";
+            return;
+        }
+        if (bottomText === "0" && (char === "0" || char === "00")) {
+            return;
+        }
+        if (bottomText === "0") {
+            bottomText = char;
+            return;
+        }
+        bottomText += char;
     }
 
     function equals() {
-        text = "something :P";
+        switch (operand) {
+            case "": {
+                return;
+                break;
+            }
+            case "/": {
+                bottomText = (Number(topText) / Number(bottomText)).toString();
+                break;
+            }
+            case "*": {
+                bottomText = (Number(topText) * Number(bottomText)).toString();
+                break;
+            }
+            case "+": {
+                bottomText = (Number(topText) + Number(bottomText)).toString();
+                break;
+            }
+            case "-": {
+                bottomText = (Number(topText) - Number(bottomText)).toString();
+                break;
+            }
+        }
+        topText = "";
+        operand = "";
     }
 </script>
 
-<div class="calculator">
-    <div class="top-section">
-        <p>{text}</p>
-    </div>
+<div class="calculator" draggable="false">
+    <ul class="top-section">
+        <li><p style="font-size: 1.5rem;">{topText}{operand}</p></li>
+        <li><p style="font-size: 3rem;">{bottomText}</p></li>
+    </ul>
 
     <div class="bottom-section">
         <button
@@ -54,17 +115,18 @@
         width: 100%;
         position: absolute;
         overflow: hidden;
+        background: rgb(30, 30, 30);
     }
 
     .top-section {
         position: absolute;
-        left: 0;
         right: 0;
         top: 0;
         height: 20%;
-        background: rgb(30, 30, 30);
+        margin-right: 2rem;
         display: flex;
-        align-items: center;
+        list-style: none;
+        flex-direction: column;
     }
 
     .bottom-section {
@@ -74,11 +136,11 @@
         bottom: 0;
         height: 80%;
         padding: 0.5rem;
-        background: rgb(30, 30, 30);
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 1fr;
         grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
         grid-gap: 0.25rem;
+        user-select: none;
     }
 
     button {
@@ -101,12 +163,17 @@
         opacity: 0.5;
     }
 
+    li {
+        height: 50%;
+        display: flex;
+        /* justify-content: center; */
+        align-items: center;
+    }
+
     p {
         position: absolute;
         right: 0;
-        margin-right: 2rem;
         font-family: SegoeUI;
-        font-size: 2rem;
         color: white;
     }
 </style>

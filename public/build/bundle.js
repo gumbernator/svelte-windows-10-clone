@@ -4159,238 +4159,267 @@ var app = (function () {
     const file$1 = "src/components/window/forms/Calculator.svelte";
 
     function create_fragment$1(ctx) {
-    	let div2;
-    	let div0;
-    	let p;
+    	let div1;
+    	let ul;
+    	let li0;
+    	let p0;
     	let t0;
     	let t1;
-    	let div1;
-    	let button0;
+    	let t2;
+    	let li1;
+    	let p1;
     	let t3;
+    	let t4;
+    	let div0;
+    	let button0;
+    	let t6;
     	let button1;
-    	let t5;
+    	let t8;
     	let button2;
-    	let t7;
+    	let t10;
     	let button3;
-    	let t9;
+    	let t12;
     	let button4;
-    	let t11;
+    	let t14;
     	let button5;
-    	let t13;
+    	let t16;
     	let button6;
-    	let t15;
+    	let t18;
     	let button7;
-    	let t17;
+    	let t20;
     	let button8;
-    	let t19;
+    	let t22;
     	let button9;
-    	let t21;
+    	let t24;
     	let button10;
-    	let t23;
+    	let t26;
     	let button11;
-    	let t25;
+    	let t28;
     	let button12;
-    	let t27;
+    	let t30;
     	let button13;
-    	let t29;
+    	let t32;
     	let button14;
-    	let t31;
+    	let t34;
     	let button15;
-    	let t33;
+    	let t36;
     	let button16;
-    	let t35;
+    	let t38;
     	let button17;
     	let mounted;
     	let dispose;
 
     	const block = {
     		c: function create() {
-    			div2 = element("div");
-    			div0 = element("div");
-    			p = element("p");
-    			t0 = text(/*text*/ ctx[0]);
-    			t1 = space();
     			div1 = element("div");
+    			ul = element("ul");
+    			li0 = element("li");
+    			p0 = element("p");
+    			t0 = text(/*topText*/ ctx[0]);
+    			t1 = text(/*operand*/ ctx[2]);
+    			t2 = space();
+    			li1 = element("li");
+    			p1 = element("p");
+    			t3 = text(/*bottomText*/ ctx[1]);
+    			t4 = space();
+    			div0 = element("div");
     			button0 = element("button");
     			button0.textContent = "C";
-    			t3 = space();
+    			t6 = space();
     			button1 = element("button");
     			button1.textContent = "/";
-    			t5 = space();
+    			t8 = space();
     			button2 = element("button");
     			button2.textContent = "*";
-    			t7 = space();
+    			t10 = space();
     			button3 = element("button");
     			button3.textContent = "7";
-    			t9 = space();
+    			t12 = space();
     			button4 = element("button");
     			button4.textContent = "8";
-    			t11 = space();
+    			t14 = space();
     			button5 = element("button");
     			button5.textContent = "9";
-    			t13 = space();
+    			t16 = space();
     			button6 = element("button");
     			button6.textContent = "-";
-    			t15 = space();
+    			t18 = space();
     			button7 = element("button");
     			button7.textContent = "4";
-    			t17 = space();
+    			t20 = space();
     			button8 = element("button");
     			button8.textContent = "5";
-    			t19 = space();
+    			t22 = space();
     			button9 = element("button");
     			button9.textContent = "6";
-    			t21 = space();
+    			t24 = space();
     			button10 = element("button");
     			button10.textContent = "+";
-    			t23 = space();
+    			t26 = space();
     			button11 = element("button");
     			button11.textContent = "1";
-    			t25 = space();
+    			t28 = space();
     			button12 = element("button");
     			button12.textContent = "2";
-    			t27 = space();
+    			t30 = space();
     			button13 = element("button");
     			button13.textContent = "3";
-    			t29 = space();
+    			t32 = space();
     			button14 = element("button");
     			button14.textContent = "0";
-    			t31 = space();
+    			t34 = space();
     			button15 = element("button");
     			button15.textContent = "00";
-    			t33 = space();
+    			t36 = space();
     			button16 = element("button");
     			button16.textContent = ".";
-    			t35 = space();
+    			t38 = space();
     			button17 = element("button");
     			button17.textContent = "=";
-    			attr_dev(p, "class", "svelte-7l2h0t");
-    			add_location(p, file$1, 15, 8, 256);
-    			attr_dev(div0, "class", "top-section svelte-7l2h0t");
-    			add_location(div0, file$1, 14, 4, 222);
+    			set_style(p0, "font-size", "1.5rem");
+    			attr_dev(p0, "class", "svelte-1eygiai");
+    			add_location(p0, file$1, 73, 12, 1749);
+    			attr_dev(li0, "class", "svelte-1eygiai");
+    			add_location(li0, file$1, 73, 8, 1745);
+    			set_style(p1, "font-size", "3rem");
+    			attr_dev(p1, "class", "svelte-1eygiai");
+    			add_location(p1, file$1, 74, 12, 1819);
+    			attr_dev(li1, "class", "svelte-1eygiai");
+    			add_location(li1, file$1, 74, 8, 1815);
+    			attr_dev(ul, "class", "top-section svelte-1eygiai");
+    			add_location(ul, file$1, 72, 4, 1712);
     			set_style(button0, "grid-column", "span 2");
     			set_style(button0, "background-color", "rgba(60, 60, 60)");
-    			attr_dev(button0, "class", "svelte-7l2h0t");
-    			add_location(button0, file$1, 19, 8, 323);
-    			attr_dev(button1, "class", "svelte-7l2h0t");
-    			add_location(button1, file$1, 23, 8, 465);
-    			attr_dev(button2, "class", "svelte-7l2h0t");
-    			add_location(button2, file$1, 24, 8, 527);
-    			attr_dev(button3, "class", "svelte-7l2h0t");
-    			add_location(button3, file$1, 25, 8, 589);
-    			attr_dev(button4, "class", "svelte-7l2h0t");
-    			add_location(button4, file$1, 26, 8, 651);
-    			attr_dev(button5, "class", "svelte-7l2h0t");
-    			add_location(button5, file$1, 27, 8, 713);
-    			attr_dev(button6, "class", "svelte-7l2h0t");
-    			add_location(button6, file$1, 28, 8, 775);
-    			attr_dev(button7, "class", "svelte-7l2h0t");
-    			add_location(button7, file$1, 29, 8, 837);
-    			attr_dev(button8, "class", "svelte-7l2h0t");
-    			add_location(button8, file$1, 30, 8, 899);
-    			attr_dev(button9, "class", "svelte-7l2h0t");
-    			add_location(button9, file$1, 31, 8, 961);
+    			attr_dev(button0, "class", "svelte-1eygiai");
+    			add_location(button0, file$1, 78, 8, 1921);
+    			attr_dev(button1, "class", "svelte-1eygiai");
+    			add_location(button1, file$1, 82, 8, 2063);
+    			attr_dev(button2, "class", "svelte-1eygiai");
+    			add_location(button2, file$1, 83, 8, 2125);
+    			attr_dev(button3, "class", "svelte-1eygiai");
+    			add_location(button3, file$1, 84, 8, 2187);
+    			attr_dev(button4, "class", "svelte-1eygiai");
+    			add_location(button4, file$1, 85, 8, 2249);
+    			attr_dev(button5, "class", "svelte-1eygiai");
+    			add_location(button5, file$1, 86, 8, 2311);
+    			attr_dev(button6, "class", "svelte-1eygiai");
+    			add_location(button6, file$1, 87, 8, 2373);
+    			attr_dev(button7, "class", "svelte-1eygiai");
+    			add_location(button7, file$1, 88, 8, 2435);
+    			attr_dev(button8, "class", "svelte-1eygiai");
+    			add_location(button8, file$1, 89, 8, 2497);
+    			attr_dev(button9, "class", "svelte-1eygiai");
+    			add_location(button9, file$1, 90, 8, 2559);
     			set_style(button10, "grid-row", "span 2");
-    			attr_dev(button10, "class", "svelte-7l2h0t");
-    			add_location(button10, file$1, 32, 8, 1023);
-    			attr_dev(button11, "class", "svelte-7l2h0t");
-    			add_location(button11, file$1, 35, 8, 1133);
-    			attr_dev(button12, "class", "svelte-7l2h0t");
-    			add_location(button12, file$1, 36, 8, 1195);
-    			attr_dev(button13, "class", "svelte-7l2h0t");
-    			add_location(button13, file$1, 37, 8, 1257);
-    			attr_dev(button14, "class", "svelte-7l2h0t");
-    			add_location(button14, file$1, 38, 8, 1319);
-    			attr_dev(button15, "class", "svelte-7l2h0t");
-    			add_location(button15, file$1, 39, 8, 1381);
-    			attr_dev(button16, "class", "svelte-7l2h0t");
-    			add_location(button16, file$1, 40, 8, 1445);
+    			attr_dev(button10, "class", "svelte-1eygiai");
+    			add_location(button10, file$1, 91, 8, 2621);
+    			attr_dev(button11, "class", "svelte-1eygiai");
+    			add_location(button11, file$1, 94, 8, 2731);
+    			attr_dev(button12, "class", "svelte-1eygiai");
+    			add_location(button12, file$1, 95, 8, 2793);
+    			attr_dev(button13, "class", "svelte-1eygiai");
+    			add_location(button13, file$1, 96, 8, 2855);
+    			attr_dev(button14, "class", "svelte-1eygiai");
+    			add_location(button14, file$1, 97, 8, 2917);
+    			attr_dev(button15, "class", "svelte-1eygiai");
+    			add_location(button15, file$1, 98, 8, 2979);
+    			attr_dev(button16, "class", "svelte-1eygiai");
+    			add_location(button16, file$1, 99, 8, 3043);
     			set_style(button17, "background-color", "rgba(60, 60, 60)");
-    			attr_dev(button17, "class", "svelte-7l2h0t");
-    			add_location(button17, file$1, 41, 8, 1507);
-    			attr_dev(div1, "class", "bottom-section svelte-7l2h0t");
-    			add_location(div1, file$1, 18, 4, 286);
-    			attr_dev(div2, "class", "calculator svelte-7l2h0t");
-    			add_location(div2, file$1, 13, 0, 193);
+    			attr_dev(button17, "class", "svelte-1eygiai");
+    			add_location(button17, file$1, 100, 8, 3105);
+    			attr_dev(div0, "class", "bottom-section svelte-1eygiai");
+    			add_location(div0, file$1, 77, 4, 1884);
+    			attr_dev(div1, "class", "calculator svelte-1eygiai");
+    			attr_dev(div1, "draggable", "false");
+    			add_location(div1, file$1, 71, 0, 1665);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div2, anchor);
-    			append_dev(div2, div0);
-    			append_dev(div0, p);
-    			append_dev(p, t0);
-    			append_dev(div2, t1);
-    			append_dev(div2, div1);
-    			append_dev(div1, button0);
-    			append_dev(div1, t3);
-    			append_dev(div1, button1);
-    			append_dev(div1, t5);
-    			append_dev(div1, button2);
-    			append_dev(div1, t7);
-    			append_dev(div1, button3);
-    			append_dev(div1, t9);
-    			append_dev(div1, button4);
-    			append_dev(div1, t11);
-    			append_dev(div1, button5);
-    			append_dev(div1, t13);
-    			append_dev(div1, button6);
-    			append_dev(div1, t15);
-    			append_dev(div1, button7);
-    			append_dev(div1, t17);
-    			append_dev(div1, button8);
-    			append_dev(div1, t19);
-    			append_dev(div1, button9);
-    			append_dev(div1, t21);
-    			append_dev(div1, button10);
-    			append_dev(div1, t23);
-    			append_dev(div1, button11);
-    			append_dev(div1, t25);
-    			append_dev(div1, button12);
-    			append_dev(div1, t27);
-    			append_dev(div1, button13);
-    			append_dev(div1, t29);
-    			append_dev(div1, button14);
-    			append_dev(div1, t31);
-    			append_dev(div1, button15);
-    			append_dev(div1, t33);
-    			append_dev(div1, button16);
-    			append_dev(div1, t35);
-    			append_dev(div1, button17);
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, ul);
+    			append_dev(ul, li0);
+    			append_dev(li0, p0);
+    			append_dev(p0, t0);
+    			append_dev(p0, t1);
+    			append_dev(ul, t2);
+    			append_dev(ul, li1);
+    			append_dev(li1, p1);
+    			append_dev(p1, t3);
+    			append_dev(div1, t4);
+    			append_dev(div1, div0);
+    			append_dev(div0, button0);
+    			append_dev(div0, t6);
+    			append_dev(div0, button1);
+    			append_dev(div0, t8);
+    			append_dev(div0, button2);
+    			append_dev(div0, t10);
+    			append_dev(div0, button3);
+    			append_dev(div0, t12);
+    			append_dev(div0, button4);
+    			append_dev(div0, t14);
+    			append_dev(div0, button5);
+    			append_dev(div0, t16);
+    			append_dev(div0, button6);
+    			append_dev(div0, t18);
+    			append_dev(div0, button7);
+    			append_dev(div0, t20);
+    			append_dev(div0, button8);
+    			append_dev(div0, t22);
+    			append_dev(div0, button9);
+    			append_dev(div0, t24);
+    			append_dev(div0, button10);
+    			append_dev(div0, t26);
+    			append_dev(div0, button11);
+    			append_dev(div0, t28);
+    			append_dev(div0, button12);
+    			append_dev(div0, t30);
+    			append_dev(div0, button13);
+    			append_dev(div0, t32);
+    			append_dev(div0, button14);
+    			append_dev(div0, t34);
+    			append_dev(div0, button15);
+    			append_dev(div0, t36);
+    			append_dev(div0, button16);
+    			append_dev(div0, t38);
+    			append_dev(div0, button17);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(button0, "click", /*clear*/ ctx[1], false, false, false),
-    					listen_dev(button1, "click", /*click_handler*/ ctx[4], false, false, false),
-    					listen_dev(button2, "click", /*click_handler_1*/ ctx[5], false, false, false),
-    					listen_dev(button3, "click", /*click_handler_2*/ ctx[6], false, false, false),
-    					listen_dev(button4, "click", /*click_handler_3*/ ctx[7], false, false, false),
-    					listen_dev(button5, "click", /*click_handler_4*/ ctx[8], false, false, false),
-    					listen_dev(button6, "click", /*click_handler_5*/ ctx[9], false, false, false),
-    					listen_dev(button7, "click", /*click_handler_6*/ ctx[10], false, false, false),
-    					listen_dev(button8, "click", /*click_handler_7*/ ctx[11], false, false, false),
-    					listen_dev(button9, "click", /*click_handler_8*/ ctx[12], false, false, false),
-    					listen_dev(button10, "click", /*click_handler_9*/ ctx[13], false, false, false),
-    					listen_dev(button11, "click", /*click_handler_10*/ ctx[14], false, false, false),
-    					listen_dev(button12, "click", /*click_handler_11*/ ctx[15], false, false, false),
-    					listen_dev(button13, "click", /*click_handler_12*/ ctx[16], false, false, false),
-    					listen_dev(button14, "click", /*click_handler_13*/ ctx[17], false, false, false),
-    					listen_dev(button15, "click", /*click_handler_14*/ ctx[18], false, false, false),
-    					listen_dev(button16, "click", /*click_handler_15*/ ctx[19], false, false, false),
-    					listen_dev(button17, "click", /*equals*/ ctx[3], false, false, false)
+    					listen_dev(button0, "click", /*clear*/ ctx[3], false, false, false),
+    					listen_dev(button1, "click", /*click_handler*/ ctx[6], false, false, false),
+    					listen_dev(button2, "click", /*click_handler_1*/ ctx[7], false, false, false),
+    					listen_dev(button3, "click", /*click_handler_2*/ ctx[8], false, false, false),
+    					listen_dev(button4, "click", /*click_handler_3*/ ctx[9], false, false, false),
+    					listen_dev(button5, "click", /*click_handler_4*/ ctx[10], false, false, false),
+    					listen_dev(button6, "click", /*click_handler_5*/ ctx[11], false, false, false),
+    					listen_dev(button7, "click", /*click_handler_6*/ ctx[12], false, false, false),
+    					listen_dev(button8, "click", /*click_handler_7*/ ctx[13], false, false, false),
+    					listen_dev(button9, "click", /*click_handler_8*/ ctx[14], false, false, false),
+    					listen_dev(button10, "click", /*click_handler_9*/ ctx[15], false, false, false),
+    					listen_dev(button11, "click", /*click_handler_10*/ ctx[16], false, false, false),
+    					listen_dev(button12, "click", /*click_handler_11*/ ctx[17], false, false, false),
+    					listen_dev(button13, "click", /*click_handler_12*/ ctx[18], false, false, false),
+    					listen_dev(button14, "click", /*click_handler_13*/ ctx[19], false, false, false),
+    					listen_dev(button15, "click", /*click_handler_14*/ ctx[20], false, false, false),
+    					listen_dev(button16, "click", /*click_handler_15*/ ctx[21], false, false, false),
+    					listen_dev(button17, "click", /*equals*/ ctx[5], false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*text*/ 1) set_data_dev(t0, /*text*/ ctx[0]);
+    			if (dirty & /*topText*/ 1) set_data_dev(t0, /*topText*/ ctx[0]);
+    			if (dirty & /*operand*/ 4) set_data_dev(t1, /*operand*/ ctx[2]);
+    			if (dirty & /*bottomText*/ 2) set_data_dev(t3, /*bottomText*/ ctx[1]);
     		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div2);
+    			if (detaching) detach_dev(div1);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -4407,21 +4436,87 @@ var app = (function () {
     	return block;
     }
 
+    const operands = /\+|-|\*|\//;
+
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Calculator", slots, []);
-    	let text = "";
+    	let topText = "";
+    	let bottomText = "0";
+    	let operand = "";
 
     	function clear() {
-    		$$invalidate(0, text = "");
+    		$$invalidate(0, topText = "");
+    		$$invalidate(1, bottomText = "0");
+    		$$invalidate(2, operand = "");
     	}
 
     	function addCharacter(char) {
-    		$$invalidate(0, text += char);
+    		if (char === ".") {
+    			if (!bottomText.includes(".")) {
+    				$$invalidate(1, bottomText += char);
+    			}
+
+    			return;
+    		}
+
+    		if (char.match(operands) && topText !== "") {
+    			return;
+    		}
+
+    		if (char.match(operands) && (bottomText.includes("+") || bottomText.includes("-") || bottomText.includes("*") || bottomText.includes("/") || topText !== "")) {
+    			return;
+    		}
+
+    		if (char.match(operands)) {
+    			$$invalidate(2, operand = char);
+    			$$invalidate(0, topText = bottomText);
+    			$$invalidate(1, bottomText = "0");
+    			return;
+    		}
+
+    		if (bottomText === "0" && (char === "0" || char === "00")) {
+    			return;
+    		}
+
+    		if (bottomText === "0") {
+    			$$invalidate(1, bottomText = char);
+    			return;
+    		}
+
+    		$$invalidate(1, bottomText += char);
     	}
 
     	function equals() {
-    		$$invalidate(0, text = "something :P");
+    		switch (operand) {
+    			case "":
+    				{
+    					return;
+    				}
+    			case "/":
+    				{
+    					$$invalidate(1, bottomText = (Number(topText) / Number(bottomText)).toString());
+    					break;
+    				}
+    			case "*":
+    				{
+    					$$invalidate(1, bottomText = (Number(topText) * Number(bottomText)).toString());
+    					break;
+    				}
+    			case "+":
+    				{
+    					$$invalidate(1, bottomText = (Number(topText) + Number(bottomText)).toString());
+    					break;
+    				}
+    			case "-":
+    				{
+    					$$invalidate(1, bottomText = (Number(topText) - Number(bottomText)).toString());
+    					break;
+    				}
+    		}
+
+    		$$invalidate(0, topText = "");
+    		$$invalidate(2, operand = "");
     	}
 
     	const writable_props = [];
@@ -4446,10 +4541,21 @@ var app = (function () {
     	const click_handler_13 = () => addCharacter("0");
     	const click_handler_14 = () => addCharacter("00");
     	const click_handler_15 = () => addCharacter(".");
-    	$$self.$capture_state = () => ({ text, clear, addCharacter, equals });
+
+    	$$self.$capture_state = () => ({
+    		topText,
+    		bottomText,
+    		operand,
+    		operands,
+    		clear,
+    		addCharacter,
+    		equals
+    	});
 
     	$$self.$inject_state = $$props => {
-    		if ("text" in $$props) $$invalidate(0, text = $$props.text);
+    		if ("topText" in $$props) $$invalidate(0, topText = $$props.topText);
+    		if ("bottomText" in $$props) $$invalidate(1, bottomText = $$props.bottomText);
+    		if ("operand" in $$props) $$invalidate(2, operand = $$props.operand);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -4457,7 +4563,9 @@ var app = (function () {
     	}
 
     	return [
-    		text,
+    		topText,
+    		bottomText,
+    		operand,
     		clear,
     		addCharacter,
     		equals,
@@ -4497,7 +4605,7 @@ var app = (function () {
     /* src/App.svelte generated by Svelte v3.38.2 */
     const file = "src/App.svelte";
 
-    // (31:4) <Window         windowId="id1"         left="1vw"         top="1vh"         width="20vw"         height="60vh"         minWidth="15vw"         minHeight="40vh"         itemPosition={0}>
+    // (31:4) <Window         windowId="_calculator"         left="25vw"         top="10vh"         width="20vw"         height="60vh"         minWidth="15vw"         minHeight="40vh"         icon="./vectors/calculator.svg"         title="Calculator"         itemPosition={0}>
     function create_default_slot(ctx) {
     	let calculator;
     	let current;
@@ -4529,7 +4637,7 @@ var app = (function () {
     		block,
     		id: create_default_slot.name,
     		type: "slot",
-    		source: "(31:4) <Window         windowId=\\\"id1\\\"         left=\\\"1vw\\\"         top=\\\"1vh\\\"         width=\\\"20vw\\\"         height=\\\"60vh\\\"         minWidth=\\\"15vw\\\"         minHeight=\\\"40vh\\\"         itemPosition={0}>",
+    		source: "(31:4) <Window         windowId=\\\"_calculator\\\"         left=\\\"25vw\\\"         top=\\\"10vh\\\"         width=\\\"20vw\\\"         height=\\\"60vh\\\"         minWidth=\\\"15vw\\\"         minHeight=\\\"40vh\\\"         icon=\\\"./vectors/calculator.svg\\\"         title=\\\"Calculator\\\"         itemPosition={0}>",
     		ctx
     	});
 
@@ -4552,13 +4660,15 @@ var app = (function () {
 
     	window = new Window({
     			props: {
-    				windowId: "id1",
-    				left: "1vw",
-    				top: "1vh",
+    				windowId: "_calculator",
+    				left: "25vw",
+    				top: "10vh",
     				width: "20vw",
     				height: "60vh",
     				minWidth: "15vw",
     				minHeight: "40vh",
+    				icon: "./vectors/calculator.svg",
+    				title: "Calculator",
     				itemPosition: 0,
     				$$slots: { default: [create_default_slot] },
     				$$scope: { ctx }
