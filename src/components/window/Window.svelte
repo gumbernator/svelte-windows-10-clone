@@ -41,7 +41,7 @@
     let formClass = "";
     let visible = false;
     let titleBarClass = "title-bar-focused";
-    let borderClass = "title-bar-focused";
+    let borderClass = "window-border-focused";
 
     let taskbarItemState = TaskbarItemStates.unopened;
     let taskbarClass = "taskbar-item-unopened";
@@ -148,6 +148,7 @@
         visible = false;
         setTimeout(() => {
             formClass = "";
+            borderClass = "";
             maximized = false;
         }, 100);
 
@@ -177,6 +178,10 @@
             windows[windowId].taskbarItemState = TaskbarItemStates.focused;
             return windows;
         });
+        borderClass =
+            state == windowsStates.maximized
+                ? "window-border-invisible"
+                : "window-border-focused";
     }
 
     function onTaskbarItemClick() {
@@ -226,6 +231,10 @@
             ? "window-border-focused"
             : "window-border-unfocused";
         borderClass = maximized ? "window-border-invisible" : borderClass;
+        borderClass =
+            state == windowsStates.minimized
+                ? "window-border-invisible"
+                : borderClass;
         zIndex = windows[windowId].zIndex;
         taskbarItemState = windows[windowId].taskbarItemState;
         switch (taskbarItemState) {
@@ -287,7 +296,8 @@
     />
     <div
         class="{borderClass} right-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx -
+            1}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
         on:mousedown={onRightBorderDown}
     />
 {/if}

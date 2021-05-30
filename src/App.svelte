@@ -8,6 +8,7 @@
     import ChosenPanel from "./components/taskbar/chosenPanel";
 
     import Calculator from "./components/window/forms/Calculator.svelte";
+    import Minesweeper from "./components/window/forms/Minesweeper.svelte";
 
     function onBackgroundClick() {
         Windows.update((windows: WindowPropType) => {
@@ -44,8 +45,24 @@
         minHeight="40vh"
         icon="./vectors/calculator.svg"
         title="Calculator"
-        itemPosition={0}><Calculator /></Window
+        itemPosition={0}
     >
+        <Calculator />
+    </Window>
+    <Window
+        windowId="_minesweeper"
+        left="20vw"
+        top="10vh"
+        width="40vw"
+        height="60vh"
+        minWidth="40vw"
+        minHeight="60vh"
+        icon="./vectors/bomb.svg"
+        title="Minesweeper"
+        itemPosition={1}
+    >
+        <Minesweeper />
+    </Window>
 </main>
 
 <style>

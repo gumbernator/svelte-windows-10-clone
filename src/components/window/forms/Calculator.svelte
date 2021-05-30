@@ -50,22 +50,21 @@
         switch (operand) {
             case "": {
                 return;
-                break;
             }
             case "/": {
-                bottomText = (Number(topText) / Number(bottomText)).toString();
+                bottomText = (Number(topText) / Number(bottomText)).toFixed(10);
                 break;
             }
             case "*": {
-                bottomText = (Number(topText) * Number(bottomText)).toString();
+                bottomText = (Number(topText) * Number(bottomText)).toFixed(10);
                 break;
             }
             case "+": {
-                bottomText = (Number(topText) + Number(bottomText)).toString();
+                bottomText = (Number(topText) + Number(bottomText)).toFixed(10);
                 break;
             }
             case "-": {
-                bottomText = (Number(topText) - Number(bottomText)).toString();
+                bottomText = (Number(topText) - Number(bottomText)).toFixed(10);
                 break;
             }
         }
@@ -146,8 +145,6 @@
     button {
         display: grid;
         border: none;
-        padding: 0;
-        margin: 0;
         border-radius: 0;
         place-items: center;
         background-color: var(--system-color-1);
@@ -166,7 +163,6 @@
     li {
         height: 50%;
         display: flex;
-        /* justify-content: center; */
         align-items: center;
     }
 
