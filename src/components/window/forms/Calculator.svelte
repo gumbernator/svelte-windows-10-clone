@@ -4,6 +4,9 @@
     let operand = "";
     const operands = /\+|-|\*|\//;
 
+    let topNumber: number;
+    let bottomNumber: number;
+
     function clear() {
         topText = "";
         bottomText = "0";
@@ -18,16 +21,7 @@
             return;
         }
         if (char.match(operands) && topText !== "") {
-            return;
-        }
-        if (
-            char.match(operands) &&
-            (bottomText.includes("+") ||
-                bottomText.includes("-") ||
-                bottomText.includes("*") ||
-                bottomText.includes("/") ||
-                topText !== "")
-        ) {
+            operand = char;
             return;
         }
         if (char.match(operands)) {
