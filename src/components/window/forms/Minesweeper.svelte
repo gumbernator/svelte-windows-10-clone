@@ -63,6 +63,7 @@
         elapsedTime = 0;
         imagePath = "./vectors/smile.svg";
         lost = false;
+        clearInterval(timer);
         timer = setInterval(() => {
             elapsedTime++;
         }, 1000);

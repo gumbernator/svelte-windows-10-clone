@@ -35,10 +35,15 @@
     let minHeightPx =
         (+minHeight.replace("vh", "") * document.documentElement.clientHeight) /
         100;
+    let pLeftPx = leftPx;
+    let pTopPx = topPx;
+    let pWidthPx = widthPx;
+    let pHeightPx = heightPx;
 
     let moving = false;
     let maximized = false;
     let formClass = "";
+    let formTransition = "none";
     let visible = false;
     let titleBarClass = "title-bar-focused";
     let borderClass = "window-border-focused";
@@ -130,16 +135,37 @@
         taskbarClass = "taskbar-item-opened";
         borderClass = "window-border-invisible";
     }
-
     function onMaximizeClick() {
-        formClass = maximized ? "form-shrink" : "form-maximize";
+        formTransition = "100ms";
+        setTimeout(() => {
+            formTransition = "none";
+        }, 100);
         state = maximized ? windowsStates.expanded : windowsStates.maximized;
-        if (!maximized) {
-            borderClass = "window-border-invisible";
-        } else {
+        if (maximized) {
             setTimeout(() => {
                 takeFocus();
-            }, 200);
+            }, 100);
+
+            leftPx = pLeftPx;
+            topPx = pTopPx;
+            widthPx = pWidthPx;
+            heightPx = pHeightPx;
+
+            state = windowsStates.expanded;
+        } else {
+            borderClass = "window-border-invisible";
+
+            pLeftPx = leftPx;
+            pTopPx = topPx;
+            pWidthPx = widthPx;
+            pHeightPx = heightPx;
+
+            leftPx = 0;
+            topPx = 0;
+            widthPx = document.documentElement.clientWidth;
+            heightPx = document.documentElement.clientHeight;
+
+            state = windowsStates.maximized;
         }
         maximized = !maximized;
     }
@@ -257,7 +283,7 @@
 {#if visible}
     <div
         class="form {formClass}"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; --taskbar-index:{itemPosition}; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; --taskbar-index:{itemPosition}; z-index: {zIndex}; transition: {formTransition}"
         transition:fade={{ duration: 100 }}
         on:mousedown={takeFocus}
         bind:this={nodeRef}
@@ -335,42 +361,6 @@
             height: var(--taskbar-height);
             visibility: hidden;
             opacity: 0;
-        }
-    }
-
-    .form-maximize {
-        animation-name: formMaximize;
-        animation-duration: 200ms;
-        animation-fill-mode: forwards;
-    }
-
-    @keyframes formMaximize {
-        to {
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: calc(100vh - var(--taskbar-height));
-        }
-    }
-
-    .form-shrink {
-        animation-name: formShrink;
-        animation-duration: 200ms;
-        animation-fill-mode: forwards;
-    }
-
-    @keyframes formShrink {
-        from {
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: calc(100vh - var(--taskbar-height));
-        }
-        to {
-            left: var(--left);
-            top: var(--top);
-            width: var(--width);
-            height: var(--height);
         }
     }
 
