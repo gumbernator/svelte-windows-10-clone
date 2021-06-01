@@ -4625,26 +4625,26 @@ var app = (function () {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[14] = list[i];
+    	child_ctx[15] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[17] = list[i];
+    	child_ctx[18] = list[i];
     	return child_ctx;
     }
 
-    // (155:24) {:else}
+    // (163:24) {:else}
     function create_else_block(ctx) {
     	let button;
-    	let t_value = /*fields*/ ctx[0][/*i*/ ctx[14]][/*j*/ ctx[17]] + "";
+    	let t_value = /*fields*/ ctx[0][/*i*/ ctx[15]][/*j*/ ctx[18]] + "";
     	let t;
     	let mounted;
     	let dispose;
 
     	function mousedown_handler_3(...args) {
-    		return /*mousedown_handler_3*/ ctx[11](/*i*/ ctx[14], /*j*/ ctx[17], ...args);
+    		return /*mousedown_handler_3*/ ctx[11](/*i*/ ctx[15], /*j*/ ctx[18], ...args);
     	}
 
     	const block = {
@@ -4652,7 +4652,7 @@ var app = (function () {
     			button = element("button");
     			t = text(t_value);
     			attr_dev(button, "class", "btn btn-active svelte-1rdu7pn");
-    			add_location(button, file$1, 155, 28, 4439);
+    			add_location(button, file$1, 163, 28, 4648);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -4665,7 +4665,7 @@ var app = (function () {
     		},
     		p: function update(new_ctx, dirty) {
     			ctx = new_ctx;
-    			if (dirty & /*fields*/ 1 && t_value !== (t_value = /*fields*/ ctx[0][/*i*/ ctx[14]][/*j*/ ctx[17]] + "")) set_data_dev(t, t_value);
+    			if (dirty & /*fields*/ 1 && t_value !== (t_value = /*fields*/ ctx[0][/*i*/ ctx[15]][/*j*/ ctx[18]] + "")) set_data_dev(t, t_value);
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(button);
@@ -4678,28 +4678,28 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(155:24) {:else}",
+    		source: "(163:24) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (150:52) 
+    // (158:52) 
     function create_if_block_2(ctx) {
     	let button;
     	let mounted;
     	let dispose;
 
     	function mousedown_handler_2(...args) {
-    		return /*mousedown_handler_2*/ ctx[10](/*i*/ ctx[14], /*j*/ ctx[17], ...args);
+    		return /*mousedown_handler_2*/ ctx[10](/*i*/ ctx[15], /*j*/ ctx[18], ...args);
     	}
 
     	const block = {
     		c: function create() {
     			button = element("button");
     			attr_dev(button, "class", "btn btn-active svelte-1rdu7pn");
-    			add_location(button, file$1, 150, 28, 4211);
+    			add_location(button, file$1, 158, 28, 4420);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -4723,28 +4723,28 @@ var app = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(150:52) ",
+    		source: "(158:52) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (145:57) 
+    // (153:57) 
     function create_if_block_1(ctx) {
     	let button;
     	let mounted;
     	let dispose;
 
     	function mousedown_handler_1(...args) {
-    		return /*mousedown_handler_1*/ ctx[9](/*i*/ ctx[14], /*j*/ ctx[17], ...args);
+    		return /*mousedown_handler_1*/ ctx[9](/*i*/ ctx[15], /*j*/ ctx[18], ...args);
     	}
 
     	const block = {
     		c: function create() {
     			button = element("button");
     			attr_dev(button, "class", "btn btn-marked svelte-1rdu7pn");
-    			add_location(button, file$1, 145, 28, 3962);
+    			add_location(button, file$1, 153, 28, 4171);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -4768,28 +4768,28 @@ var app = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(145:57) ",
+    		source: "(153:57) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (140:24) {#if fieldStates[i][j] == 0}
+    // (148:24) {#if fieldStates[i][j] == 0}
     function create_if_block(ctx) {
     	let button;
     	let mounted;
     	let dispose;
 
     	function mousedown_handler(...args) {
-    		return /*mousedown_handler*/ ctx[8](/*i*/ ctx[14], /*j*/ ctx[17], ...args);
+    		return /*mousedown_handler*/ ctx[8](/*i*/ ctx[15], /*j*/ ctx[18], ...args);
     	}
 
     	const block = {
     		c: function create() {
     			button = element("button");
     			attr_dev(button, "class", "btn btn-inactive svelte-1rdu7pn");
-    			add_location(button, file$1, 140, 28, 3706);
+    			add_location(button, file$1, 148, 28, 3915);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, button, anchor);
@@ -4813,21 +4813,21 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(140:24) {#if fieldStates[i][j] == 0}",
+    		source: "(148:24) {#if fieldStates[i][j] == 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (139:20) {#each [...Array(cols).keys()] as j}
+    // (147:20) {#each [...Array(cols).keys()] as j}
     function create_each_block_1(ctx) {
     	let if_block_anchor;
 
     	function select_block_type(ctx, dirty) {
-    		if (/*fieldStates*/ ctx[1][/*i*/ ctx[14]][/*j*/ ctx[17]] == 0) return create_if_block;
-    		if (/*fieldStates*/ ctx[1][/*i*/ ctx[14]][/*j*/ ctx[17]] == 2) return create_if_block_1;
-    		if (/*fields*/ ctx[0][/*i*/ ctx[14]][/*j*/ ctx[17]] == 0) return create_if_block_2;
+    		if (/*fieldStates*/ ctx[1][/*i*/ ctx[15]][/*j*/ ctx[18]] == 0) return create_if_block;
+    		if (/*fieldStates*/ ctx[1][/*i*/ ctx[15]][/*j*/ ctx[18]] == 2) return create_if_block_1;
+    		if (/*fields*/ ctx[0][/*i*/ ctx[15]][/*j*/ ctx[18]] == 0) return create_if_block_2;
     		return create_else_block;
     	}
 
@@ -4866,14 +4866,14 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(139:20) {#each [...Array(cols).keys()] as j}",
+    		source: "(147:20) {#each [...Array(cols).keys()] as j}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (137:12) {#each [...Array(rows).keys()] as i}
+    // (145:12) {#each [...Array(rows).keys()] as i}
     function create_each_block(ctx) {
     	let div;
     	let t;
@@ -4895,7 +4895,7 @@ var app = (function () {
 
     			t = space();
     			attr_dev(div, "class", "svelte-1rdu7pn");
-    			add_location(div, file$1, 137, 16, 3562);
+    			add_location(div, file$1, 145, 16, 3771);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -4941,7 +4941,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(137:12) {#each [...Array(rows).keys()] as i}",
+    		source: "(145:12) {#each [...Array(rows).keys()] as i}",
     		ctx
     	});
 
@@ -4992,27 +4992,27 @@ var app = (function () {
     			}
 
     			attr_dev(button, "class", "refresher svelte-1rdu7pn");
-    			add_location(button, file$1, 128, 8, 3244);
+    			add_location(button, file$1, 136, 8, 3453);
     			if (img.src !== (img_src_value = /*imagePath*/ ctx[3])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "");
     			attr_dev(img, "class", "svelte-1rdu7pn");
-    			add_location(img, file$1, 129, 8, 3307);
+    			add_location(img, file$1, 137, 8, 3516);
     			attr_dev(p, "class", "svelte-1rdu7pn");
-    			add_location(p, file$1, 131, 12, 3388);
+    			add_location(p, file$1, 139, 12, 3597);
     			attr_dev(div0, "class", "timer-container svelte-1rdu7pn");
-    			add_location(div0, file$1, 130, 8, 3346);
+    			add_location(div0, file$1, 138, 8, 3555);
     			attr_dev(div1, "class", "top-section svelte-1rdu7pn");
-    			add_location(div1, file$1, 127, 4, 3210);
+    			add_location(div1, file$1, 135, 4, 3419);
     			attr_dev(div2, "class", "fields svelte-1rdu7pn");
-    			add_location(div2, file$1, 135, 8, 3476);
+    			add_location(div2, file$1, 143, 8, 3685);
     			attr_dev(div3, "class", "bottom-section svelte-1rdu7pn");
-    			add_location(div3, file$1, 134, 4, 3439);
+    			add_location(div3, file$1, 142, 4, 3648);
     			set_style(div4, "background", "#7f7f7f");
     			set_style(div4, "width", "100%");
     			set_style(div4, "height", "100%");
     			set_style(div4, "user-select", "none");
     			attr_dev(div4, "draggable", "false");
-    			add_location(div4, file$1, 120, 0, 3025);
+    			add_location(div4, file$1, 128, 0, 3234);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -5123,6 +5123,13 @@ var app = (function () {
 
     		if (event.button == 2) {
     			$$invalidate(1, fieldStates[i][j] = fieldStates[i][j] == 2 ? 0 : 2, fieldStates);
+
+    			if (checkIfWon()) {
+    				$$invalidate(3, imagePath = "./vectors/heart.svg");
+    				clearInterval(timer);
+    				lost = true;
+    			}
+
     			return;
     		}
 
@@ -5241,6 +5248,18 @@ var app = (function () {
     		}
     	}
 
+    	function checkIfWon() {
+    		for (let i = 0; i < rows; i++) {
+    			for (let j = 0; j < cols; j++) {
+    				if (fields[i][j] == -1 && fieldStates[i][j] != 2) {
+    					return false;
+    				}
+    			}
+    		}
+
+    		return true;
+    	}
+
     	onRefreshClick();
     	const writable_props = [];
 
@@ -5263,7 +5282,8 @@ var app = (function () {
     		lost,
     		timer,
     		onBtnClick,
-    		onRefreshClick
+    		onRefreshClick,
+    		checkIfWon
     	});
 
     	$$self.$inject_state = $$props => {

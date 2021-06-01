@@ -17,6 +17,11 @@
         }
         if (event.button == 2) {
             fieldStates[i][j] = fieldStates[i][j] == 2 ? 0 : 2;
+            if (checkIfWon()) {
+                imagePath = "./vectors/heart.svg";
+                clearInterval(timer);
+                lost = true;
+            }
             return;
         }
         if (fieldStates[i][j] == 2) {
@@ -114,15 +119,18 @@
         }
     }
 
-    onRefreshClick();
+    function checkIfWon() {
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                if (fields[i][j] == -1 && fieldStates[i][j] != 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
-    // function checkIfWon() {
-    //     for (let i = 0; i < rows; i++) {
-    //         for (let j = 0; j < cols; j++) {
-    //             if (fieldStates[i][j] == )
-    //         }
-    //     }
-    // }
+    onRefreshClick();
 </script>
 
 <div
