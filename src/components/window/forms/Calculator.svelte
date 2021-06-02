@@ -4,9 +4,6 @@
     let operand = "";
     const operands = /\+|-|\*|\//;
 
-    let topNumber: number;
-    let bottomNumber: number;
-
     function clear() {
         topText = "";
         bottomText = "0";
@@ -46,19 +43,19 @@
                 return;
             }
             case "/": {
-                bottomText = (Number(topText) / Number(bottomText)).toFixed(10);
+                bottomText = (Number(topText) / Number(bottomText)).toFixed(6);
                 break;
             }
             case "*": {
-                bottomText = (Number(topText) * Number(bottomText)).toFixed(10);
+                bottomText = (Number(topText) * Number(bottomText)).toFixed(6);
                 break;
             }
             case "+": {
-                bottomText = (Number(topText) + Number(bottomText)).toFixed(10);
+                bottomText = (Number(topText) + Number(bottomText)).toFixed(6);
                 break;
             }
             case "-": {
-                bottomText = (Number(topText) - Number(bottomText)).toFixed(10);
+                bottomText = (Number(topText) - Number(bottomText)).toFixed(6);
                 break;
             }
         }

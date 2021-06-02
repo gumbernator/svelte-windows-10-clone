@@ -30,6 +30,8 @@ let mon = {
         screenSnip: "Дэлгэц хэсэглэх",
         network: "Сүлжээ",
     },
+    calculatorTitle: "Тооны машин",
+    minesweeperTitle: "Мин шүүрдэгч",
 };
 
 export default mon;

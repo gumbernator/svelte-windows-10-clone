@@ -10,6 +10,14 @@
     import Calculator from "./components/window/forms/Calculator.svelte";
     import Minesweeper from "./components/window/forms/Minesweeper.svelte";
 
+    import Language from "./languages/chosen";
+    import { get } from "svelte/store";
+    let language = get(Language);
+
+    Language.subscribe((data) => {
+        language = data;
+    });
+
     function onBackgroundClick() {
         Windows.update((windows: WindowPropType) => {
             for (let key in windows) {
@@ -44,7 +52,7 @@
         minWidth="15vw"
         minHeight="40vh"
         icon="./vectors/calculator.svg"
-        title="Calculator"
+        title={language.text.calculatorTitle}
         itemPosition={0}
     >
         <Calculator />
@@ -58,7 +66,7 @@
         minWidth="40vw"
         minHeight="60vh"
         icon="./vectors/bomb.svg"
-        title="Minesweeper"
+        title={language.text.minesweeperTitle}
         itemPosition={1}
     >
         <Minesweeper />

@@ -38,6 +38,8 @@ let eng = {
         screenSnip: "Screen snip",
         network: "Network",
     },
+    calculatorTitle: "Calculator",
+    minesweeperTitle: "Minesweeper",
 };
 
 export default eng;
