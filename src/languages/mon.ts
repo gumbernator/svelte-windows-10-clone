@@ -32,6 +32,7 @@ let mon = {
     },
     calculatorTitle: "Тооны машин",
     minesweeperTitle: "Мин шүүрдэгч",
+    mailTitle: "Цахим шуудан",
 };
 
 export default mon;

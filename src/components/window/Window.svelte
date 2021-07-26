@@ -163,7 +163,9 @@
             leftPx = 0;
             topPx = 0;
             widthPx = document.documentElement.clientWidth;
-            heightPx = document.documentElement.clientHeight;
+            heightPx =
+                document.documentElement.clientHeight -
+                Math.max(0.04 * document.documentElement.clientHeight, 30);
 
             state = windowsStates.maximized;
         }

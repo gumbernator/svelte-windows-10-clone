@@ -40,6 +40,7 @@ let eng = {
     },
     calculatorTitle: "Calculator",
     minesweeperTitle: "Minesweeper",
+    mailTitle: "Mail",
 };
 
 export default eng;

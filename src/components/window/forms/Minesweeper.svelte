@@ -277,6 +277,12 @@
         align-items: center;
     }
 
+    button {
+        overflow: hidden;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+
     p {
         width: 4ch;
         color: red;

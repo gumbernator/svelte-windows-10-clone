@@ -12,6 +12,7 @@
 
     import Language from "./languages/chosen";
     import { get } from "svelte/store";
+    import Mail from "./components/window/forms/Mail.svelte";
     let language = get(Language);
 
     Language.subscribe((data) => {
@@ -43,6 +44,21 @@
     </div>
 
     <Taskbar />
+
+    <Window
+        windowId="_mail"
+        left="25vw"
+        top="15vh"
+        width="60vw"
+        minWidth="50vw"
+        height="65vh"
+        minHeight="40vh"
+        icon="./vectors/email.svg"
+        title={language.text.mailTitle}
+        itemPosition={0}
+    >
+        <Mail />
+    </Window>
     <Window
         windowId="_calculator"
         left="25vw"
@@ -53,7 +69,7 @@
         minHeight="40vh"
         icon="./vectors/calculator.svg"
         title={language.text.calculatorTitle}
-        itemPosition={0}
+        itemPosition={1}
     >
         <Calculator />
     </Window>
@@ -67,7 +83,7 @@
         minHeight="60vh"
         icon="./vectors/bomb.svg"
         title={language.text.minesweeperTitle}
-        itemPosition={1}
+        itemPosition={2}
     >
         <Minesweeper />
     </Window>
@@ -104,5 +120,41 @@
         width: 100vw;
         height: 100vh;
         overflow: hidden;
+    }
+
+    @media screen and (max-width: 4000px) {
+        :global(html) {
+            font-size: 26px;
+        }
+    }
+
+    @media screen and (max-width: 3500px) {
+        :global(html) {
+            font-size: 22px;
+        }
+    }
+
+    @media screen and (max-width: 2600px) {
+        :global(html) {
+            font-size: 18px;
+        }
+    }
+
+    @media screen and (max-width: 2000px) {
+        :global(html) {
+            font-size: 16px;
+        }
+    }
+
+    @media screen and (max-width: 1200px) {
+        :global(html) {
+            font-size: 15px;
+        }
+    }
+
+    @media screen and (max-width: 900px) {
+        :global(html) {
+            font-size: 14px;
+        }
     }
 </style>
