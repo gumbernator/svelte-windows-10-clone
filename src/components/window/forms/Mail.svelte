@@ -1,4 +1,12 @@
 <script lang="ts">
+    import Language from "../../../languages/chosen";
+    import { get } from "svelte/store";
+    let language = get(Language);
+
+    Language.subscribe((data) => {
+        language = data;
+    });
+
     type Mail = {
         initials: string;
         initialsColor: string;
@@ -42,7 +50,7 @@
         <div class="accounts">
             <div class="account-text">
                 <img src="./vectors/user.svg" alt="user" height="20vh" />
-                <p>Accounts</p>
+                <p>{language.text.mail.accounts}</p>
             </div>
 
             <div class="account-section">
@@ -54,7 +62,7 @@
         <div class="folders">
             <div class="folders-text">
                 <img src="./vectors/folder.svg" alt="folder" height="20vh" />
-                <p>Folders</p>
+                <p>{language.text.mail.folders}</p>
             </div>
 
             <div
@@ -77,7 +85,10 @@
         <div class="mail-list-header">
             <div class="mail-list-header-top">
                 <div class="search-bar">
-                    <input type="text" placeholder="Search" />
+                    <input
+                        type="text"
+                        placeholder={language.text.mail.search}
+                    />
                     <button />
                 </div>
             </div>
@@ -85,9 +96,11 @@
                 <div
                     style="margin-left: 1rem; border-bottom: 0.125rem solid rgb(185, 216, 255);"
                 >
-                    <p style="color: rgb(185, 216, 255);">Focused</p>
+                    <p style="color: rgb(185, 216, 255);">
+                        {language.text.mail.focused}
+                    </p>
                 </div>
-                <div><p>Other</p></div>
+                <div><p>{language.text.mail.other}</p></div>
             </div>
         </div>
         <div class="mail-list-mails">

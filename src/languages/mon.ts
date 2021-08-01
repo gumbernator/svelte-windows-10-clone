@@ -33,6 +33,19 @@ let mon = {
     calculatorTitle: "Тооны машин",
     minesweeperTitle: "Мин шүүрдэгч",
     mailTitle: "Цахим шуудан",
+    mail: {
+        accounts: "Хаягууд",
+        folders: "Хавтсууд",
+        focused: "Үндсэн",
+        other: "Бусад",
+        search: "Хайх",
+    },
+    paintTitle: "Будаг",
+    paint: {
+        size: "Хэмжээ",
+        clear: "Арилгах",
+        save: "Хадгалах",
+    },
 };
 
 export default mon;

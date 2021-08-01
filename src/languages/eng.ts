@@ -41,6 +41,19 @@ let eng = {
     calculatorTitle: "Calculator",
     minesweeperTitle: "Minesweeper",
     mailTitle: "Mail",
+    mail: {
+        accounts: "Accounts",
+        folders: "Folders",
+        focused: "Focused",
+        other: "Other",
+        search: "Search",
+    },
+    paintTitle: "Paint",
+    paint: {
+        size: "Size",
+        clear: "clear",
+        save: "save",
+    },
 };
 
 export default eng;

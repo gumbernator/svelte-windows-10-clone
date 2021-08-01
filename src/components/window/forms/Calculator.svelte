@@ -43,19 +43,27 @@
                 return;
             }
             case "/": {
-                bottomText = (Number(topText) / Number(bottomText)).toFixed(6);
+                bottomText = Number(
+                    (Number(topText) / Number(bottomText)).toFixed(6)
+                ).toString();
                 break;
             }
             case "*": {
-                bottomText = (Number(topText) * Number(bottomText)).toFixed(6);
+                bottomText = Number(
+                    (Number(topText) * Number(bottomText)).toFixed(6)
+                ).toString();
                 break;
             }
             case "+": {
-                bottomText = (Number(topText) + Number(bottomText)).toFixed(6);
+                bottomText = Number(
+                    (Number(topText) + Number(bottomText)).toFixed(6)
+                ).toString();
                 break;
             }
             case "-": {
-                bottomText = (Number(topText) - Number(bottomText)).toFixed(6);
+                bottomText = Number(
+                    (Number(topText) - Number(bottomText)).toFixed(6)
+                ).toString();
                 break;
             }
         }

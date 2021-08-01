@@ -13,6 +13,7 @@
     import Language from "./languages/chosen";
     import { get } from "svelte/store";
     import Mail from "./components/window/forms/Mail.svelte";
+    import Paint from "./components/window/forms/Paint.svelte";
     let language = get(Language);
 
     Language.subscribe((data) => {
@@ -47,8 +48,8 @@
 
     <Window
         windowId="_mail"
-        left="25vw"
-        top="15vh"
+        left="10vw"
+        top="20vh"
         width="60vw"
         minWidth="50vw"
         height="65vh"
@@ -60,16 +61,30 @@
         <Mail />
     </Window>
     <Window
+        windowId="_paint"
+        left="20vw"
+        top="10vh"
+        width="60vw"
+        height="70vh"
+        minWidth="30vw"
+        minHeight="20vh"
+        icon="./vectors/microsoft-paint.svg"
+        title={language.text.paintTitle}
+        itemPosition={1}
+    >
+        <Paint />
+    </Window>
+    <Window
         windowId="_calculator"
         left="25vw"
-        top="10vh"
+        top="15vh"
         width="20vw"
         height="60vh"
         minWidth="15vw"
         minHeight="40vh"
         icon="./vectors/calculator.svg"
         title={language.text.calculatorTitle}
-        itemPosition={1}
+        itemPosition={2}
     >
         <Calculator />
     </Window>
@@ -83,7 +98,7 @@
         minHeight="60vh"
         icon="./vectors/bomb.svg"
         title={language.text.minesweeperTitle}
-        itemPosition={2}
+        itemPosition={3}
     >
         <Minesweeper />
     </Window>
