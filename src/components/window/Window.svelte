@@ -285,7 +285,7 @@
 {#if visible}
     <div
         class="form {formClass}"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; --taskbar-index:{itemPosition}; z-index: {zIndex}; transition: {formTransition}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; transition: {formTransition};"
         transition:fade={{ duration: 100 }}
         on:mousedown={takeFocus}
         bind:this={nodeRef}
@@ -309,23 +309,22 @@
     </div>
     <div
         class="{borderClass} top-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
         on:mousedown={onTopBorderDown}
     />
     <div
         class="{borderClass} left-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
         on:mousedown={onLeftBorderDown}
     />
     <div
         class="{borderClass} bottom-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
         on:mousedown={onBottomBorderDown}
     />
     <div
         class="{borderClass} right-border"
-        style="--top:{topPx}px; --left:{leftPx -
-            1}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
         on:mousedown={onRightBorderDown}
     />
 {/if}
@@ -344,6 +343,7 @@
         top: var(--top);
         width: var(--width);
         height: var(--height);
+        background: transparent;
     }
 
     .form-minimize {
@@ -372,14 +372,15 @@
         width: 100%;
         height: 3vh;
         user-select: none;
+        /* backdrop-filter: blur(2px); */
     }
 
     .title-bar-focused {
-        background-color: var(--system-color-2);
+        background: rgba(117, 117, 117, 0.9);
     }
 
     .title-bar-unfocused {
-        background-color: var(--system-color-1);
+        background: rgba(43, 43, 43, 0.9);
     }
 
     .form-body {

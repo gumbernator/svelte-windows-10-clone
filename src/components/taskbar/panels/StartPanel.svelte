@@ -17,6 +17,7 @@
     <button class="btn-power" />
     <button class="btn-settings" />
     <button class="btn-profile" />
+    <div class="shortcuts" />
 </div>
 
 <style>

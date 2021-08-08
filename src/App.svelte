@@ -14,13 +14,15 @@
     import { get } from "svelte/store";
     import Mail from "./components/window/forms/Mail.svelte";
     import Paint from "./components/window/forms/Paint.svelte";
+    import Icon from "./components/Icon.svelte";
     let language = get(Language);
 
     Language.subscribe((data) => {
         language = data;
     });
 
-    function onBackgroundClick() {
+    let githubPressed = false;
+    let onBackgroundClick = () => {
         Windows.update((windows: WindowPropType) => {
             for (let key in windows) {
                 windows[key].focused = false;
@@ -36,13 +38,29 @@
             data.name = "";
             return data;
         });
-    }
+
+        githubPressed = false;
+    };
 </script>
 
 <main>
-    <div on:click={onBackgroundClick}>
+    <div class="background" on:click={onBackgroundClick}>
         <img src="./vectors/Flat-Mountains.svg" alt="" draggable="false" />
     </div>
+
+    <Icon top="0" left="0" imgPath="../images/github-icon.png" text="Github" />
+    <Icon
+        top="5rem"
+        left="0"
+        imgPath="../vectors/email-send.svg"
+        text="Mail me"
+    />
+    <Icon
+        top="10rem"
+        left="0"
+        imgPath="../images/linkedin-icon.png"
+        text="Linkedin"
+    />
 
     <Taskbar />
 
@@ -105,13 +123,25 @@
 </main>
 
 <style>
-    div {
+    @keyframes backgroundSlide {
+        0% {
+            background: #526786;
+        }
+        100% {
+            background: rgb(88, 141, 222);
+        }
+    }
+
+    .background {
         position: absolute;
         left: 0;
         top: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #588dde;
+        animation-name: backgroundSlide;
+        animation-duration: 1000ms;
+        animation-timing-function: ease-in-out;
+        animation-fill-mode: forwards;
         user-select: none;
     }
 
