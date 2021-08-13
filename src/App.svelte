@@ -40,7 +40,7 @@
     };
 </script>
 
-<main>
+<main draggable="false" on:dragstart|preventDefault>
     <div class="background" on:click={onBackgroundClick}>
         <img src="./vectors/Flat-Mountains.svg" alt="" draggable="false" />
     </div>
@@ -164,6 +164,7 @@
         width: 100%;
         height: auto;
         bottom: 0;
+        user-select: none;
     }
 
     :global(:root) {
