@@ -23,6 +23,7 @@
     on:mouseenter={onmouseenter}
     on:mouseleave={onmouseleave}
     on:mousedown={onmousedown}
+    on:dblclick
 >
     <p>{text}</p>
 </button>

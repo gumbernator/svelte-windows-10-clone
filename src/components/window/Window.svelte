@@ -46,7 +46,7 @@
     let formTransition = "none";
     let visible = false;
     let titleBarClass = "title-bar-focused";
-    let borderClass = "window-border-focused";
+    let borderVisibility = "visible";
 
     let taskbarItemState = TaskbarItemStates.unopened;
     let taskbarClass = "taskbar-item-unopened";
@@ -133,8 +133,9 @@
         state = windowsStates.minimized;
         taskbarItemState = TaskbarItemStates.opened;
         taskbarClass = "taskbar-item-opened";
-        borderClass = "window-border-invisible";
+        borderVisibility = "hidden";
     }
+
     function onMaximizeClick() {
         formTransition = "100ms";
         setTimeout(() => {
@@ -153,8 +154,6 @@
 
             state = windowsStates.expanded;
         } else {
-            borderClass = "window-border-invisible";
-
             pLeftPx = leftPx;
             pTopPx = topPx;
             pWidthPx = widthPx;
@@ -176,7 +175,6 @@
         visible = false;
         setTimeout(() => {
             formClass = "";
-            borderClass = "";
             maximized = false;
         }, 100);
 
@@ -206,10 +204,6 @@
             windows[windowId].taskbarItemState = TaskbarItemStates.focused;
             return windows;
         });
-        borderClass =
-            state == windowsStates.maximized
-                ? "window-border-invisible"
-                : "window-border-focused";
     }
 
     function onTaskbarItemClick() {
@@ -218,6 +212,7 @@
                 taskbarItemState = TaskbarItemStates.focused;
                 taskbarClass = "taskbar-item-focused";
                 visible = true;
+                borderVisibility = "visible";
                 takeFocus();
                 break;
             }
@@ -227,6 +222,7 @@
                 if (state == windowsStates.minimized) {
                     formClass = "";
                 }
+                borderVisibility = "visible";
                 takeFocus();
                 break;
             }
@@ -255,14 +251,6 @@
         titleBarClass = windows[windowId].focused
             ? "title-bar-focused"
             : "title-bar-unfocused";
-        borderClass = windows[windowId].focused
-            ? "window-border-focused"
-            : "window-border-unfocused";
-        borderClass = maximized ? "window-border-invisible" : borderClass;
-        borderClass =
-            state == windowsStates.minimized
-                ? "window-border-invisible"
-                : borderClass;
         zIndex = windows[windowId].zIndex;
         taskbarItemState = windows[windowId].taskbarItemState;
         switch (taskbarItemState) {
@@ -285,7 +273,7 @@
 {#if visible}
     <div
         class="form {formClass}"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; transition: {formTransition};"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; --taskbar-index: {itemPosition}; z-index: {zIndex}; transition: {formTransition};"
         transition:fade={{ duration: 100 }}
         on:mousedown={takeFocus}
         bind:this={nodeRef}
@@ -308,23 +296,23 @@
         </div>
     </div>
     <div
-        class="{borderClass} top-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
+        class="top-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; visibility: {borderVisibility};"
         on:mousedown={onTopBorderDown}
     />
     <div
-        class="{borderClass} left-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
+        class="left-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; visibility: {borderVisibility};"
         on:mousedown={onLeftBorderDown}
     />
     <div
-        class="{borderClass} bottom-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
+        class="bottom-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; visibility: {borderVisibility};"
         on:mousedown={onBottomBorderDown}
     />
     <div
-        class="{borderClass} right-border"
-        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex};"
+        class="right-border"
+        style="--top:{topPx}px; --left:{leftPx}px; --width:{widthPx}px; --height:{heightPx}px; z-index: {zIndex}; visibility: {borderVisibility};"
         on:mousedown={onRightBorderDown}
     />
 {/if}
@@ -344,6 +332,9 @@
         width: var(--width);
         height: var(--height);
         background: transparent;
+        border: 1px solid var(--system-color-2);
+        border-radius: 0.5rem;
+        overflow: hidden;
     }
 
     .form-minimize {
@@ -355,6 +346,10 @@
     @keyframes formMinimize {
         0% {
             opacity: 1;
+        }
+        50% {
+            width: var(--taskbar-height);
+            height: var(--taskbar-height);
         }
         100% {
             top: calc(100vh - var(--taskbar-height));
@@ -372,7 +367,7 @@
         width: 100%;
         height: 3vh;
         user-select: none;
-        /* backdrop-filter: blur(2px); */
+        backdrop-filter: blur(2px);
     }
 
     .title-bar-focused {
@@ -453,21 +448,8 @@
         background-color: crimson;
     }
 
-    .window-border-focused {
-        position: absolute;
-        background-color: var(--system-color-2);
-    }
-
-    .window-border-unfocused {
-        position: absolute;
-        background-color: var(--system-color-1);
-    }
-
-    .window-border-invisible {
-        visibility: hidden;
-    }
-
     .top-border {
+        position: absolute;
         left: var(--left);
         top: var(--top);
         width: var(--width);
@@ -476,6 +458,7 @@
     }
 
     .left-border {
+        position: absolute;
         left: var(--left);
         top: var(--top);
         height: var(--height);
@@ -484,6 +467,7 @@
     }
 
     .bottom-border {
+        position: absolute;
         left: var(--left);
         top: calc(var(--top) + var(--height));
         width: calc(var(--width) + 2px);
@@ -492,6 +476,7 @@
     }
 
     .right-border {
+        position: absolute;
         left: calc(var(--left) + var(--width));
         top: var(--top);
         height: var(--height);

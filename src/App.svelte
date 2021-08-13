@@ -21,7 +21,6 @@
         language = data;
     });
 
-    let githubPressed = false;
     let onBackgroundClick = () => {
         Windows.update((windows: WindowPropType) => {
             for (let key in windows) {
@@ -38,8 +37,6 @@
             data.name = "";
             return data;
         });
-
-        githubPressed = false;
     };
 </script>
 
@@ -48,18 +45,35 @@
         <img src="./vectors/Flat-Mountains.svg" alt="" draggable="false" />
     </div>
 
-    <Icon top="0" left="0" imgPath="../images/github-icon.png" text="Github" />
+    <Icon
+        top="0"
+        left="0"
+        imgPath="../images/github-icon.png"
+        text="Github"
+        on:dblclick={() => {
+            window.open("https://github.com/gumbernator", "_blank");
+        }}
+    />
     <Icon
         top="5rem"
         left="0"
         imgPath="../vectors/email-send.svg"
         text="Mail me"
+        on:dblclick={() => {
+            window.location.href = "mailto:guyugmonkh@hotmail.com";
+        }}
     />
     <Icon
         top="10rem"
         left="0"
         imgPath="../images/linkedin-icon.png"
         text="Linkedin"
+        on:dblclick={() => {
+            window.open(
+                "https://mn.linkedin.com/in/guyugmonkh-lkhagvachuluun-022833182",
+                "_blank"
+            );
+        }}
     />
 
     <Taskbar />
@@ -108,7 +122,7 @@
     </Window>
     <Window
         windowId="_minesweeper"
-        left="20vw"
+        left="40vw"
         top="10vh"
         width="40vw"
         height="60vh"
