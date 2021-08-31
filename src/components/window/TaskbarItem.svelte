@@ -2,9 +2,11 @@
     export let itemPosition = 0;
     export let iconPath = "";
     export let className = "taskbar-item-unopened";
+    export let id: string;
 </script>
 
 <button
+    {id}
     class="taskbar-item {className}"
     style="--item-position: {itemPosition};"
     on:click

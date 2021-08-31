@@ -11,13 +11,60 @@
         }
         className = previouslyOpened ? "panel-close" : "";
     });
+
+    function onProgramClick(windowId: string) {
+        if (document.getElementById(windowId) != null) {
+            document.getElementById(windowId)!.click();
+
+            ChosenPanel.update((data) => {
+                data.name = "";
+                return data;
+            });
+        }
+    }
 </script>
 
 <div class="panel {className}" style="visibility:hidden;">
     <button class="btn-power" />
     <button class="btn-settings" />
     <button class="btn-profile" />
-    <div class="shortcuts" />
+    <div class="shortcuts">
+        <p>C</p>
+        <button
+            on:click={() => {
+                onProgramClick("_calculator");
+            }}
+        >
+            <img src="./vectors/calculator.svg" alt="calculator" />
+            <p>Calculator</p>
+        </button>
+        <p>M</p>
+        <button
+            on:click={() => {
+                onProgramClick("_mail");
+            }}
+        >
+            <img src="./vectors/email.svg" alt="email" />
+            <p>Mail</p>
+        </button>
+        <button
+            on:click={() => {
+                onProgramClick("_minesweeper");
+            }}
+        >
+            <img src="./vectors/bomb.svg" alt="minesweeper" />
+            <p>Minesweeper</p>
+        </button>
+        <p>P</p>
+        <button
+            on:click={() => {
+                onProgramClick("_paint");
+            }}
+        >
+            <img src="./vectors/microsoft-paint.svg" alt="paint" />
+            <p>Paint</p>
+        </button>
+    </div>
 </div>
 
 <style>
@@ -96,8 +143,40 @@
     }
 
     .btn-profile {
+        background-image: url(../images/diamond.png);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 70%;
         bottom: calc(2 * (var(--taskbar-height) + 0.5vh));
-        background-color: rgba(30, 30, 30, 0.95);
-        background-size: 40%;
+    }
+
+    .shortcuts {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .shortcuts p {
+        color: white;
+        font-family: SegoeUILight;
+        font-size: 1rem;
+    }
+
+    .shortcuts > p {
+        position: relative;
+        left: calc(var(--taskbar-height));
+        margin-left: 1rem;
+    }
+
+    .shortcuts > button {
+        position: relative;
+        left: calc(var(--taskbar-height) + 0.5vh);
+        width: calc(100% - var(--taskbar-height) - 0.5vh);
+        display: flex;
+        align-items: center;
+    }
+
+    .shortcuts > button > img {
+        height: 90%;
     }
 </style>

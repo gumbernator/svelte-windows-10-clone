@@ -317,6 +317,7 @@
     />
 {/if}
 <TaskbarItem
+    id={windowId}
     {itemPosition}
     iconPath={icon}
     className={taskbarClass}
