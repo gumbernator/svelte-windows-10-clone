@@ -32,6 +32,7 @@ let mon = {
     },
     calculatorTitle: "Тооны машин",
     minesweeperTitle: "Мин шүүрдэгч",
+    profileTitle: "Миний тухай",
     mailTitle: "Цахим шуудан",
     mail: {
         accounts: "Хаягууд",
@@ -45,6 +46,20 @@ let mon = {
         size: "Хэмжээ",
         clear: "Арилгах",
         save: "Хадгалах",
+    },
+    profile: {
+        topText: `Сайн уу! Намайг Гүюгмөнх гэдэг. Програм хөгжүүлэгчээр ажилдаг. Ихэвчлэн back end дээр ажилдаг бөгөөд 
+        энэ сайт нь миний анхны front end project бөлгөө. Өмнө нь хиймэл оюун, машин сургалт судалдаг байсан. 
+        Ер нь сонирхол татсан бол ямар ч хамаагүй ажил хийнэ шүү.`,
+        acheivements: "Түүх:",
+        acheivementITPEC:
+            "тухайн үед Монголоос хамгийн өндөр оноог авсан. (Японы инженерийн шалгалт)",
+        acheivementGraduate: "МУИС-ын Компьютерийн ухааны ангиар төгссөн.",
+        acheivementThesis: "Миний төгсөлтийн ажил",
+        acheivementUnitelFirst: "",
+        acheivementUnitelLast: "-д back end хөгжүүлэгчээр ажиллаж эхэлсэн.",
+        languages: "Програмчлалын хэлнүүд:",
+        technologies: "Технологиуд:",
     },
 };
 

@@ -40,6 +40,7 @@ let eng = {
     },
     calculatorTitle: "Calculator",
     minesweeperTitle: "Minesweeper",
+    profileTitle: "About Me",
     mailTitle: "Mail",
     mail: {
         accounts: "Accounts",
@@ -53,6 +54,21 @@ let eng = {
         size: "Size",
         clear: "clear",
         save: "save",
+    },
+    profile: {
+        topText: `Hi, I'm Guyug, a software developer based in Mongolia. I mostly work in the
+        back end and this site is actually my first front end project. Also
+        dabbled a lot with AI and machine learning. Willing to work in any
+        interesting project tho.`,
+        acheivements: "Acheivements:",
+        acheivementITPEC: "top scorer from Mongolia. (Japanese FE exam)",
+        acheivementGraduate:
+            "Graduated from National University of Mongolia in Computer Science.",
+        acheivementThesis: "my final project",
+        acheivementUnitelFirst: "Started working at ",
+        acheivementUnitelLast: "as a back end developer.",
+        languages: "Languages:",
+        technologies: "Technologies:",
     },
 };
 

@@ -15,6 +15,7 @@
     import Mail from "./components/window/forms/Mail.svelte";
     import Paint from "./components/window/forms/Paint.svelte";
     import Icon from "./components/Icon.svelte";
+    import Aboutme from "./components/window/forms/Aboutme.svelte";
     let language = get(Language);
 
     Language.subscribe((data) => {
@@ -133,6 +134,22 @@
         itemPosition={3}
     >
         <Minesweeper />
+    </Window>
+
+    <Window
+        windowId="_profile"
+        left="15vw"
+        top="10vh"
+        width="60vw"
+        height="60vh"
+        minWidth="40vw"
+        minHeight="30vh"
+        icon="./vectors/profile.svg"
+        title={language.text.profileTitle}
+        itemPosition={4}
+        firstOpen={true}
+    >
+        <Aboutme />
     </Window>
 </main>
 

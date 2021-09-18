@@ -16,6 +16,7 @@
     export let title = "Title";
     export let windowId = "";
     export let itemPosition = 0;
+    export let firstOpen = false;
     let zIndex = 0;
 
     let nodeRef: HTMLElement;
@@ -268,6 +269,10 @@
             }
         }
     });
+
+    if (firstOpen) {
+        onTaskbarItemClick();
+    }
 </script>
 
 {#if visible}
@@ -454,7 +459,7 @@
         left: var(--left);
         top: var(--top);
         width: var(--width);
-        height: 2px;
+        height: 0.25rem;
         cursor: n-resize;
     }
 
@@ -463,7 +468,7 @@
         left: var(--left);
         top: var(--top);
         height: var(--height);
-        width: 2px;
+        width: 0.25rem;
         cursor: w-resize;
     }
 
@@ -471,8 +476,8 @@
         position: absolute;
         left: var(--left);
         top: calc(var(--top) + var(--height));
-        width: calc(var(--width) + 2px);
-        height: 2px;
+        width: calc(var(--width) + 0.25rem);
+        height: 0.25rem;
         cursor: s-resize;
     }
 
@@ -481,7 +486,7 @@
         left: calc(var(--left) + var(--width));
         top: var(--top);
         height: var(--height);
-        width: 2px;
+        width: 0.25rem;
         cursor: e-resize;
     }
 </style>
