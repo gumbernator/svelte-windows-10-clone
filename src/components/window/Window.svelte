@@ -359,7 +359,11 @@
         }
         100% {
             top: calc(100vh - var(--taskbar-height));
-            left: calc(var(--taskbar-height) * (var(--taskbar-index) + 1));
+            left: calc(
+                var(--taskbar-index) * (var(--taskbar-height) + 0.5vh) +
+                    var(--taskbar-height) + 0.5vh + (var(--taskbar-index) + 1) *
+                    1px
+            );
             width: var(--taskbar-height);
             height: var(--taskbar-height);
             visibility: hidden;
