@@ -144,9 +144,9 @@
 
     <Window
         windowId="_profile"
-        left="15vw"
+        left="7vw"
         top="10vh"
-        width="60vw"
+        width="55vw"
         height="60vh"
         minWidth="40vw"
         minHeight="30vh"
@@ -160,25 +160,12 @@
 </main>
 
 <style>
-    @keyframes backgroundSlide {
-        0% {
-            background: rgb(135, 162, 202);
-        }
-        100% {
-            background: rgb(133, 133, 133);
-        }
-    }
-
     .background {
         position: absolute;
         left: 0;
         top: 0;
         width: 100vw;
         height: 100vh;
-        animation-name: backgroundSlide;
-        animation-duration: 1000ms;
-        animation-timing-function: ease-in-out;
-        animation-fill-mode: forwards;
         user-select: none;
         display: flex;
         justify-content: center;
