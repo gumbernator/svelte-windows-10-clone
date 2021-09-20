@@ -10,6 +10,8 @@
     import Calculator from "./components/window/forms/Calculator.svelte";
     import Minesweeper from "./components/window/forms/Minesweeper.svelte";
 
+    import lazyLoad from "./components/lazyLoad";
+
     import Language from "./languages/chosen";
     import { get } from "svelte/store";
     import Mail from "./components/window/forms/Mail.svelte";
@@ -43,7 +45,11 @@
 
 <main draggable="false" on:dragstart|preventDefault>
     <div class="background" on:click={onBackgroundClick}>
-        <img src="./vectors/Flat-Mountains.svg" alt="" draggable="false" />
+        <img
+            use:lazyLoad={"./images/windows11wallpaper.png"}
+            alt=""
+            draggable="false"
+        />
     </div>
 
     <Icon
@@ -156,10 +162,10 @@
 <style>
     @keyframes backgroundSlide {
         0% {
-            background: #526786;
+            background: rgb(135, 162, 202);
         }
         100% {
-            background: rgb(88, 141, 222);
+            background: rgb(133, 133, 133);
         }
     }
 
@@ -174,13 +180,15 @@
         animation-timing-function: ease-in-out;
         animation-fill-mode: forwards;
         user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     img {
-        position: absolute;
+        height: 100%;
         width: 100%;
-        height: auto;
-        bottom: 0;
+        object-fit: cover;
         user-select: none;
     }
 

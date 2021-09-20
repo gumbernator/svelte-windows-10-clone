@@ -79,6 +79,7 @@
         height: 100%;
         width: auto;
         display: block;
+        background: transparent;
     }
 
     p {
