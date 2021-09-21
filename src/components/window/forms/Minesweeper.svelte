@@ -188,6 +188,7 @@
         width: 100%;
         height: 5vh;
         background-color: #c0c0c0;
+        overflow: hidden;
     }
 
     .bottom-section {
@@ -198,13 +199,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        overflow: hidden;
     }
 
     .fields {
         top: 0;
         left: 0;
-        width: 50vh;
-        height: 50vh;
         border: 1px solid transparent;
         background-color: #c0c0c0;
         display: flex;
@@ -219,9 +219,8 @@
 
     .btn {
         flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        width: 1.5rem;
+        height: 1.5rem;
     }
 
     .btn-inactive {
