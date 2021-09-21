@@ -12,7 +12,9 @@
     });
 </script>
 
-<div class="system-tray-panel" style="--visibility: {visibility}" />
+<div class="system-tray-panel" style="--visibility: {visibility}">
+    <img src="./images/rickroll.gif" alt="rickrolled" />
+</div>
 
 <style>
     .system-tray-panel {
@@ -30,5 +32,10 @@
         background-color: rgba(0, 0, 0, 0.7);
         z-index: 998;
         visibility: var(--visibility);
+    }
+
+    img {
+        height: 100%;
+        min-width: 100%;
     }
 </style>
