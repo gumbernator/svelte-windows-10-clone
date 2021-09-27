@@ -61,6 +61,10 @@ let mon = {
         languages: "Програмчлалын хэлнүүд:",
         technologies: "Технологиуд:",
     },
+    guide: {
+        taskbar: "Яг Windows шиг доорх icon-ууд дээр дарж болно ;)",
+        systemTray: "Хэл сольж, календар харж, notification-уудаа харж болно.",
+    },
 };
 
 export default mon;

@@ -18,6 +18,8 @@
     import Paint from "./components/window/forms/Paint.svelte";
     import Icon from "./components/Icon.svelte";
     import Aboutme from "./components/window/forms/Aboutme.svelte";
+    import Guide from "./components/Guide.svelte";
+    import { text } from "svelte/internal";
     let language = get(Language);
 
     Language.subscribe((data) => {
@@ -157,6 +159,26 @@
     >
         <Aboutme />
     </Window>
+
+    <Guide
+        top="85vh"
+        left="0.5rem"
+        width="15vw"
+        height="10vh"
+        appearAt={1500}
+        disappearAt={6500}
+        text={language.text.guide.taskbar}
+    />
+
+    <Guide
+        top="85vh"
+        left="88vw"
+        width="11vw"
+        height="10vh"
+        appearAt={6500}
+        disappearAt={11500}
+        text={language.text.guide.systemTray}
+    />
 </main>
 
 <style>

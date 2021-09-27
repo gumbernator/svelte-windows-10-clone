@@ -16,6 +16,10 @@
             {language.text.profile.topText}
         </p>
         <ul>
+            Full CV:
+            <a href="/files/guyug_cv.pdf" target="_blank">guyug_cv.pdf</a>
+        </ul>
+        <ul>
             {language.text.profile.acheivements}
             <li>
                 2019:
